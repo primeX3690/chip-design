@@ -1,0 +1,12 @@
+# EvoHDL Python dependencies
+# Note: Verilator and Yosys are NOT Python packages -- they are external
+# EDA tools that must be installed separately via your OS package manager
+# or built from source. See README.md "Environment Setup".
+
+pyyaml>=6.0
+streamlit>=1.32
+plotly>=5.20
+pandas>=2.0
+psutil>=5.9
+numpy>=1.24
+pytest>=7.4

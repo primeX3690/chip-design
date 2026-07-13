@@ -1,0 +1,302 @@
+[
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.43943579245992437,
+    "worst_fitness": 0.0,
+    "diversity": 0.5,
+    "generation": 0,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783937693.3579595
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4703461795777144,
+    "worst_fitness": 0.0,
+    "diversity": 0.75,
+    "generation": 1,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783937764.3993757
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.40856420815504957,
+    "worst_fitness": 0.0,
+    "diversity": 0.7916666666666666,
+    "generation": 2,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783937830.1674228
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.43741054403923796,
+    "worst_fitness": 0.0,
+    "diversity": 0.7916666666666666,
+    "generation": 3,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783937920.4130676
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4094530017597071,
+    "worst_fitness": 0.0,
+    "diversity": 0.8333333333333334,
+    "generation": 4,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783937988.353992
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.34222136029296707,
+    "worst_fitness": 0.0,
+    "diversity": 0.7916666666666666,
+    "generation": 5,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938058.6977198
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.37892829262852684,
+    "worst_fitness": 0.0,
+    "diversity": 0.7916666666666666,
+    "generation": 6,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938131.242957
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4720330413316107,
+    "worst_fitness": 0.0,
+    "diversity": 0.8333333333333334,
+    "generation": 7,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938204.989722
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.48827395939260826,
+    "worst_fitness": 0.0,
+    "diversity": 0.7083333333333334,
+    "generation": 8,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938273.8469822
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4281093174974908,
+    "worst_fitness": 0.0,
+    "diversity": 0.7083333333333334,
+    "generation": 9,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938348.0463748
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.44070019158803436,
+    "worst_fitness": 0.0,
+    "diversity": 0.6666666666666666,
+    "generation": 10,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938420.1967473
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4073951711832274,
+    "worst_fitness": 0.0,
+    "diversity": 0.6666666666666666,
+    "generation": 11,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938490.587222
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4002146760343482,
+    "worst_fitness": 0.0,
+    "diversity": 0.6666666666666666,
+    "generation": 12,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938556.770248
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4464963528157606,
+    "worst_fitness": 0.0,
+    "diversity": 0.6666666666666666,
+    "generation": 13,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938625.941167
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.48173418274413593,
+    "worst_fitness": 0.0,
+    "diversity": 0.5833333333333334,
+    "generation": 14,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938689.6565425
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.49684584216200145,
+    "worst_fitness": 0.0,
+    "diversity": 0.7083333333333334,
+    "generation": 15,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938761.6879911
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.38969555035128806,
+    "worst_fitness": 0.0,
+    "diversity": 0.7916666666666666,
+    "generation": 16,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938829.1608677
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.46105023976803844,
+    "worst_fitness": 0.0,
+    "diversity": 0.5416666666666666,
+    "generation": 17,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938904.7278764
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.46125515780082527,
+    "worst_fitness": 0.0,
+    "diversity": 0.5833333333333334,
+    "generation": 18,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783938984.9752479
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.44562847223599694,
+    "worst_fitness": 0.0,
+    "diversity": 0.5833333333333334,
+    "generation": 19,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783939037.2748368
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4406634511728189,
+    "worst_fitness": 0.0,
+    "diversity": 0.7916666666666666,
+    "generation": 20,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783939089.645536
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.3301410728225717,
+    "worst_fitness": 0.0,
+    "diversity": 0.9166666666666666,
+    "generation": 21,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783939128.4895277
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.45228964536634336,
+    "worst_fitness": 0.0,
+    "diversity": 0.7916666666666666,
+    "generation": 22,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783939180.0573435
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.42104800936768155,
+    "worst_fitness": 0.0,
+    "diversity": 0.7916666666666666,
+    "generation": 23,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783939232.6753864
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.38861101817776295,
+    "worst_fitness": 0.0,
+    "diversity": 0.9166666666666666,
+    "generation": 24,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783939283.7921689
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.35754014720642363,
+    "worst_fitness": 0.0,
+    "diversity": 0.8333333333333334,
+    "generation": 25,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783939328.1749566
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.4705989089624922,
+    "worst_fitness": 0.0,
+    "diversity": 0.75,
+    "generation": 26,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783939380.4458427
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.1203726162596186,
+    "worst_fitness": 0.0,
+    "diversity": 0.7083333333333334,
+    "generation": 27,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783946003.2233393
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.17965386974461917,
+    "worst_fitness": 0.0,
+    "diversity": 0.8333333333333334,
+    "generation": 28,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783946091.7266698
+  },
+  {
+    "size": 24,
+    "best_fitness": 0.7489795918367348,
+    "avg_fitness": 0.2689298260287722,
+    "worst_fitness": 0.0,
+    "diversity": 0.875,
+    "generation": 29,
+    "best_genome_hash": "1910426457",
+    "timestamp": 1783946179.7313178
+  }
+]

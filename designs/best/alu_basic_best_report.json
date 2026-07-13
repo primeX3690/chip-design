@@ -1,0 +1,9 @@
+{
+  "fitness": 0.7489795918367348,
+  "functionally_correct": true,
+  "pass_ratio": 1.0,
+  "cell_count": 245,
+  "logic_depth": 0,
+  "sim_error": "",
+  "synth_error": ""
+}

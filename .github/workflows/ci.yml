@@ -1,0 +1,50 @@
+name: EvoHDL CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install EDA toolchain (Verilator + Yosys)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y verilator yosys
+          verilator --version
+          yosys -V
+
+      - name: Install Python dependencies
+        run: pip install -r config/requirements.txt
+
+      - name: Static syntax check (all Python files)
+        run: |
+          find . -name "*.py" -not -path "./.venv/*" -print0 | xargs -0 -n1 python -m py_compile
+
+      - name: Run unit tests (no EDA tools required)
+        run: pytest tests/unit/ -v
+
+      - name: Verify toolchain wiring
+        run: python run_self_learner.py --check-tools
+
+      - name: Smoke-test a tiny real evolutionary run
+        run: python run_self_learner.py --generations 2 --population 4 --verbose
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evohdl-smoke-run
+          path: |
+            designs/best/
+            dashboard/run_history.json
