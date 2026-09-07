@@ -1,0 +1,36 @@
+# EvoHDL system configuration
+# All orchestrator parameters live here so a run is fully reproducible
+# from this one file + the seed design.
+
+# --- Design under evolution -------------------------------------------------
+module_name: counter_4bit
+seed_design: designs/seed/counter_4bit.v
+
+# --- Genetic algorithm -------------------------------------------------------
+population_size: 24
+generations: 30
+elite_count: 2            # top-N individuals carried forward unchanged each generation
+tournament_k: 3            # tournament selection group size
+crossover_rate: 0.6        # probability a child is produced via crossover before mutation
+mutation_rate: 0.8         # probability mutation is additionally applied to a child
+random_seed: 42            # set to null for a non-deterministic run
+
+# --- Execution ---------------------------------------------------------------
+max_parallel_evals: 4      # thread pool size for simulate+synthesize (bind to CPU count)
+
+# --- Toolchain paths (override if not on PATH) --------------------------------
+verilator_bin: verilator
+yosys_bin: yosys
+
+# --- Simulation / synthesis limits -------------------------------------------
+sim_timeout_sec: 60
+synth_timeout_sec: 60
+mem_limit_mb: 1024
+num_random_test_vectors: 200
+
+# --- Fitness normalization (see 2_evolutionary_engine/fitness_evaluator.py) ---
+# These are overwritten automatically at first run by 1_symbolic_core/
+# constraint_extractor.py profiling the seed design, if auto_baseline is true.
+auto_baseline: true
+baseline_cells: 40
+baseline_depth: 6

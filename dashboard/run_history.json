@@ -1,142 +1,22 @@
 [
   {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.43943579245992437,
+    "size": 6,
+    "best_fitness": 0.0,
+    "avg_fitness": 0.0,
     "worst_fitness": 0.0,
-    "diversity": 0.5,
+    "diversity": 0.3333333333333333,
     "generation": 0,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785037556.056891
+    "best_genome_hash": "e15d75ad81",
+    "timestamp": 1788769303.0938118
   },
   {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.4705169446050368,
+    "size": 6,
+    "best_fitness": 0.0,
+    "avg_fitness": 0.0,
     "worst_fitness": 0.0,
-    "diversity": 0.7083333333333334,
+    "diversity": 0.3333333333333333,
     "generation": 1,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785037618.5178547
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.40856420815504957,
-    "worst_fitness": 0.0,
-    "diversity": 0.7916666666666666,
-    "generation": 2,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785037674.1608129
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.4917821287386916,
-    "worst_fitness": 0.0,
-    "diversity": 0.75,
-    "generation": 3,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785037741.4715934
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.4131369366179114,
-    "worst_fitness": 0.0,
-    "diversity": 0.75,
-    "generation": 4,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785037798.3065836
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.3505049143280132,
-    "worst_fitness": 0.0,
-    "diversity": 0.75,
-    "generation": 5,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785037865.3982694
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.34016898580338184,
-    "worst_fitness": 0.0,
-    "diversity": 0.875,
-    "generation": 6,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785037978.4254565
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.4249842552447077,
-    "worst_fitness": 0.0,
-    "diversity": 0.7916666666666666,
-    "generation": 7,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785038038.7632325
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.48312899383818847,
-    "worst_fitness": 0.0,
-    "diversity": 0.7916666666666666,
-    "generation": 8,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785038109.3282802
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.41332484040074924,
-    "worst_fitness": 0.0,
-    "diversity": 0.7916666666666666,
-    "generation": 9,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785038168.7180648
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.4753028442526712,
-    "worst_fitness": 0.0,
-    "diversity": 0.6666666666666666,
-    "generation": 10,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785038230.1673837
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.3615276848444296,
-    "worst_fitness": 0.0,
-    "diversity": 0.7083333333333334,
-    "generation": 11,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785038394.3711436
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.3877146760343482,
-    "worst_fitness": 0.0,
-    "diversity": 0.6666666666666666,
-    "generation": 12,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785038451.9030325
-  },
-  {
-    "size": 24,
-    "best_fitness": 0.7489795918367348,
-    "avg_fitness": 0.41101864242964953,
-    "worst_fitness": 0.0,
-    "diversity": 0.8333333333333334,
-    "generation": 13,
-    "best_genome_hash": "1910426457",
-    "timestamp": 1785038516.4106648
+    "best_genome_hash": "e15d75ad81",
+    "timestamp": 1788769306.362035
   }
 ]

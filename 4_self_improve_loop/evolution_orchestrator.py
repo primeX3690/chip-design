@@ -38,6 +38,7 @@ from fitness_evaluator import score  # noqa: E402
 from design_rule_checker import run_all_checks  # noqa: E402
 from design_generator import load_seed_design, generate_initial_population  # noqa: E402
 from reward_backprop import OperatorCredit  # noqa: E402
+from multi_objective import export_pareto_front_csv
 
 logger = logging.getLogger("EvoHDL.orchestrator")
 
@@ -190,6 +191,7 @@ class EvolutionOrchestrator:
         for generation in range(self.generations):
             t0 = time.time()
             self.evaluate_population()
+            export_pareto_front_csv(self.pool.population, f"designs/gen_{generation}/pareto_front.csv")
             summary = self.persist_generation(generation)
             elapsed = time.time() - t0
             logger.info(
