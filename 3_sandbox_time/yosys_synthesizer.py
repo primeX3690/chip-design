@@ -28,7 +28,13 @@ logger = logging.getLogger("EvoHDL.yosys_synthesizer")
 
 CELL_COUNT_RE = re.compile(r"Number of cells:\s*(\d+)")
 WIRE_COUNT_RE = re.compile(r"Number of wires:\s*(\d+)")
-LTP_RE = re.compile(r"Longest topological path.*?(\d+)\s*step", re.IGNORECASE | re.DOTALL)
+# NOTE: fixed 2026-09 -- the old pattern (`...(\d+)\s*step`) never matched
+# real Yosys output ("Longest topological path in <mod> (length=N):"), so
+# logic_depth silently came back 0 for every design (alu_basic included).
+# Verified against Yosys 0.33 output; kept both patterns for forward/backward
+# compatibility across Yosys versions.
+LTP_RE = re.compile(r"Longest topological path.*?\(length[=\s]*(\d+)\)", re.IGNORECASE | re.DOTALL)
+LTP_RE_LEGACY = re.compile(r"Longest topological path.*?(\d+)\s*step", re.IGNORECASE | re.DOTALL)
 
 
 @dataclass
@@ -86,7 +92,7 @@ def synthesize_design(
         out = result.stdout
         cell_match = CELL_COUNT_RE.search(out)
         wire_match = WIRE_COUNT_RE.search(out)
-        ltp_match = LTP_RE.search(out)
+        ltp_match = LTP_RE.search(out) or LTP_RE_LEGACY.search(out)
 
         return SynthesisOutcome(
             synthesized=True,

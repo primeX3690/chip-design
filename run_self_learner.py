@@ -15,6 +15,7 @@ Use --check-tools to verify your environment before committing to a full run.
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import shutil
 import sys
@@ -89,6 +90,10 @@ def main():
     parser.add_argument("--population", type=int, default=None, help="override population_size from config")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--check-tools", action="store_true", help="verify Verilator/Yosys are installed and exit")
+    parser.add_argument("--full-verify", action="store_true",
+                         help="after the GA run finishes, chain baseline_compare + OpenLane(sky130) + OpenSTA + "
+                              "nextpnr-ice40 on the best genome and write benchmarks/hardware_verification_report.md "
+                              "(see 4_self_improve_loop/hardware_verification_pipeline.py)")
     args = parser.parse_args()
 
     setup_logging(args.verbose)
@@ -121,6 +126,27 @@ def main():
     logger.info("Run history saved to dashboard/run_history.json")
     logger.info("Launch the dashboard with: streamlit run dashboard/app.py")
 
+    if args.full_verify:
+        logger.info("Running full hardware verification pipeline (OpenLane/OpenSTA/nextpnr)...")
+        sys.path.append(str(PROJECT_ROOT / "2_evolutionary_engine"))
+        from hardware_verification_pipeline import run_full_verification, render_markdown, REPORT_DIR
+        module_name = config.get("module_name")
+        report = run_full_verification(
+            module_name=module_name,
+            baseline_rtl_path=config.get("seed_design", f"designs/seed/{module_name}.v"),
+            evolved_rtl_path=f"designs/best/{module_name}_best.v",
+            clock_port=config.get("clock_port"),
+            clock_period_ns=config.get("clock_period_ns", 10.0),
+            yosys_bin=config.get("yosys_bin", "yosys"),
+            sta_bin=config.get("sta_bin", "sta"),
+            pdk_root=config.get("pdk_root", "~/.volare"),
+        )
+        REPORT_DIR.mkdir(parents=True, exist_ok=True)
+        (REPORT_DIR / "hardware_verification_report.json").write_text(json.dumps(report, indent=2, default=str))
+        (REPORT_DIR / "hardware_verification_report.md").write_text(render_markdown(report))
+        logger.info("Hardware verification report written to benchmarks/hardware_verification_report.md")
+
 
 if __name__ == "__main__":
     main()
+

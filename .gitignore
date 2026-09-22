@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+designs/gen_*/
+dashboard/run_history*.json
+flow/openlane/_runs/
+*.vcd
+obj_dir*/
+.venv/

@@ -25,7 +25,7 @@ sys.path.append(str(Path(__file__).resolve().parent))
 import system_health  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-HISTORY_PATH = PROJECT_ROOT / "dashboard" / "run_history.json"
+DASHBOARD_DIR = PROJECT_ROOT / "dashboard"
 BEST_DIR = PROJECT_ROOT / "designs" / "best"
 
 st.set_page_config(page_title="EvoHDL Dashboard", layout="wide")
@@ -33,11 +33,22 @@ st.title("EvoHDL — Self-Improving RTL Optimization")
 st.caption("Live view of the evolutionary loop's fitness, diversity, and best-of-run Verilog design.")
 
 
-def load_history() -> pd.DataFrame:
-    if not HISTORY_PATH.exists():
+def discover_history_files() -> list[Path]:
+    """Per-module run_history_<module>.json files (see evolution_orchestrator.py),
+    plus the legacy single run_history.json for backward compatibility with
+    older runs that predate the per-module fix."""
+    per_module = sorted(DASHBOARD_DIR.glob("run_history_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    legacy = DASHBOARD_DIR / "run_history.json"
+    if legacy.exists():
+        per_module.append(legacy)
+    return per_module
+
+
+def load_history(history_path: Path) -> pd.DataFrame:
+    if not history_path.exists():
         return pd.DataFrame()
     try:
-        data = json.loads(HISTORY_PATH.read_text())
+        data = json.loads(history_path.read_text())
     except json.JSONDecodeError:
         return pd.DataFrame()
     return pd.DataFrame(data)
@@ -61,7 +72,9 @@ with st.sidebar:
     st.subheader("System health")
     system_health.render_streamlit_panel(st)
 
-df = load_history()
+df = load_history(DASHBOARD_DIR / f"run_history_{module_name}.json"
+                   if (DASHBOARD_DIR / f"run_history_{module_name}.json").exists()
+                   else DASHBOARD_DIR / "run_history.json")  # legacy fallback
 
 if df.empty:
     st.info("No run history yet. Start a run with:  `python run_self_learner.py`")
@@ -94,3 +107,4 @@ with col_b:
 if auto_refresh:
     time.sleep(5)
     st.rerun()
+

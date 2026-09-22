@@ -65,7 +65,13 @@ class EvolutionOrchestrator:
         self.yosys_bin = config.get("yosys_bin", "yosys")
 
         self.designs_dir = PROJECT_ROOT / "designs"
-        self.log_path = PROJECT_ROOT / "dashboard" / "run_history.json"
+        # NOTE: fixed 2026-09 -- this used to be a single shared
+        # dashboard/run_history.json regardless of module_name, so running
+        # e.g. picorv32_alu after alu_basic silently mixed two runs'
+        # incompatible fitness scales into one file and corrupted the
+        # dashboard. Now per-module; dashboard/app.py picks the most
+        # recently modified one (see its module selector).
+        self.log_path = PROJECT_ROOT / "dashboard" / f"run_history_{self.module_name}.json"
 
     # ---------------------------------------------------------------- setup
 

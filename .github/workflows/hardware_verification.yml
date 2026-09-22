@@ -1,0 +1,89 @@
+name: EvoHDL Real Hardware Verification (OpenLane + sky130)
+
+# Runs the heavy part of hardware_verification_pipeline.py (OpenLane +
+# SkyWater 130nm PDK, which needs Docker + several GB of RAM) on GitHub's
+# free ubuntu-latest runner instead of your own machine -- built for
+# 8GB-RAM/Ryzen-3-class laptops where running OpenLane locally would be
+# painful or impossible.
+#
+# nextpnr-ice40 (point 5) is deliberately NOT run here -- it's light enough
+# to just run on your laptop directly:
+#   python 4_self_improve_loop/nextpnr_runner.py designs/seed/picorv32_alu.v picorv32_alu
+#
+# Trigger manually from the GitHub Actions tab ("Run workflow"), or
+# whenever you push a new designs/best/<module>_best.v.
+
+on:
+  workflow_dispatch:
+    inputs:
+      module_name:
+        description: "Module to verify (must have designs/seed/<module>.v and designs/best/<module>_best.v)"
+        required: true
+        default: "picorv32_alu"
+  push:
+    branches: [main]
+    paths:
+      - "designs/best/**"
+
+jobs:
+  hardware-verify:
+    runs-on: ubuntu-latest   # free tier: 2 vCPU, 7 GB RAM -- enough for one small-module OpenLane run
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r config/requirements.txt volare
+
+      - name: Free disk space (OpenLane + PDK need room on the runner)
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h
+
+      - name: Download the SkyWater 130nm PDK via volare
+        run: |
+          PDK_VERSION=$(volare ls-remote --pdk sky130 | tail -1)
+          volare enable --pdk sky130 "$PDK_VERSION"
+          echo "PDK_ROOT=$HOME/.volare" >> "$GITHUB_ENV"
+
+      - name: Pull the OpenLane Docker image
+        run: docker pull ghcr.io/efabless/openlane:latest
+
+      - name: Determine module name
+        id: module
+        run: |
+          MODULE="${{ github.event.inputs.module_name }}"
+          if [ -z "$MODULE" ]; then MODULE="picorv32_alu"; fi
+          echo "name=$MODULE" >> "$GITHUB_OUTPUT"
+
+      - name: Run OpenLane on the best evolved design (real sky130 area + timing)
+        run: |
+          python 4_self_improve_loop/openlane_runner.py \
+            "designs/best/${{ steps.module.outputs.name }}_best.v" \
+            "${{ steps.module.outputs.name }}" \
+            --pdk-root "$PDK_ROOT" || true
+
+      - name: Run the full verification pipeline (also folds in the fast Yosys baseline compare)
+        run: |
+          python 4_self_improve_loop/hardware_verification_pipeline.py \
+            --module "${{ steps.module.outputs.name }}" \
+            --baseline "designs/seed/${{ steps.module.outputs.name }}.v" \
+            --evolved "designs/best/${{ steps.module.outputs.name }}_best.v" \
+            --pdk-root "$PDK_ROOT"
+
+      - name: Upload hardware verification report
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardware-verification-report-${{ steps.module.outputs.name }}
+          path: |
+            benchmarks/hardware_verification_report.md
+            benchmarks/hardware_verification_report.json
+          retention-days: 90
+
+      - name: Print report summary to the job log
+        run: cat benchmarks/hardware_verification_report.md >> "$GITHUB_STEP_SUMMARY"

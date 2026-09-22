@@ -1,0 +1,43 @@
+# EvoHDL system configuration -- picorv32_alu
+# Evolves the real, silicon-referenced PicoRV32 ALU datapath (see
+# designs/seed/picorv32_alu.v for provenance) instead of the alu_basic toy
+# module. Run with:
+#   python run_self_learner.py --config config/config_picorv32_alu.yaml
+
+# --- Design under evolution -------------------------------------------------
+module_name: picorv32_alu
+seed_design: designs/seed/picorv32_alu.v
+
+# --- Genetic algorithm -------------------------------------------------------
+population_size: 24
+generations: 40             # real 32-bit ALU has a bigger search space than alu_basic
+elite_count: 2
+tournament_k: 3
+crossover_rate: 0.6
+mutation_rate: 0.8
+random_seed: 42
+
+# --- Execution ---------------------------------------------------------------
+max_parallel_evals: 4
+
+# --- Toolchain paths (override if not on PATH) --------------------------------
+verilator_bin: verilator
+yosys_bin: yosys
+
+# --- Simulation / synthesis limits -------------------------------------------
+# 32-bit datapath with a much bigger vector space than alu_basic's 8-bit one
+# -- 300 vectors (vs. 200 for alu_basic) mixes directed corner cases with
+# random coverage; see testbench_generator.py's _generate_picorv32_alu_vectors.
+sim_timeout_sec: 90
+synth_timeout_sec: 90
+mem_limit_mb: 1536
+num_random_test_vectors: 300
+
+# --- Fitness normalization (see 2_evolutionary_engine/fitness_evaluator.py) ---
+# Auto-profiled from the seed on first run (auto_baseline: true) -- the
+# static numbers below are just a fallback and get overwritten. Real
+# profiled baseline for picorv32_alu (verified in this repo): 1409 cells,
+# logic depth 23 (post yosys_synthesizer.py's `ltp` regex fix).
+auto_baseline: true
+baseline_cells: 1409
+baseline_depth: 23

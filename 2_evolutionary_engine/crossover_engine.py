@@ -16,7 +16,10 @@ import re
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
-BRANCH_RE = re.compile(r"^(\s*)(3'b[01]{3}|default):\s*(.+?);\s*(//.*)?$")
+# Generalized from the original alu_basic-only `3'b[01]{3}` pattern so any
+# bit-width case-branch selector (e.g. 4'b for picorv32_alu's 10-way ALU
+# opcode) is recognized, not just 3-bit opcodes.
+BRANCH_RE = re.compile(r"^(\s*)(\d+'b[01]+|default):\s*(.+?);\s*(//.*)?$")
 
 
 @dataclass

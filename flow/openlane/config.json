@@ -1,0 +1,29 @@
+{
+  "_comment": "OpenLane 2.x design config for pushing an EvoHDL genome through the real open SkyWater 130nm (sky130_fd_sc_hd) PDK flow. openlane_runner.py generates a copy of this file per run with DESIGN_NAME / VERILOG_FILES / CLOCK_PERIOD filled in for whichever module is under evolution -- do not edit PLACEHOLDER_* fields by hand, they are overwritten.",
+
+  "DESIGN_NAME": "PLACEHOLDER_MODULE_NAME",
+  "VERILOG_FILES": "dir::src/PLACEHOLDER_MODULE_NAME.v",
+
+  "CLOCK_PORT": null,
+  "CLOCK_NET": null,
+  "CLOCK_PERIOD": 10,
+
+  "_clock_note": "picorv32_alu (and alu_basic) are purely combinational -- no CLOCK_PORT. OpenLane synthesizes/places/routes a clockless block fine; CLOCK_PERIOD still needs a nominal value because some internal STA/TritonCTS steps expect one, but it does not gate a real flop-to-flop path here. For a sequential module (e.g. counter_4bit), set CLOCK_PORT to the clk pin name and CLOCK_PERIOD to the real target period in ns.",
+
+  "FP_SIZING": "absolute",
+  "DIE_AREA": "0 0 200 200",
+  "FP_CORE_UTIL": 35,
+
+  "PL_TARGET_DENSITY": 0.45,
+
+  "SYNTH_STRATEGY": "AREA 0",
+  "SYNTH_MAX_FANOUT": 6,
+
+  "RUN_KLAYOUT_XOR": true,
+  "RUN_CVC": false,
+  "QUIT_ON_TIMING_VIOLATIONS": false,
+  "QUIT_ON_MAGIC_DRC": false,
+
+  "PDK": "sky130A",
+  "STD_CELL_LIBRARY": "sky130_fd_sc_hd"
+}

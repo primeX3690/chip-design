@@ -41,7 +41,9 @@ def check_nonempty_case_branches(source: str) -> List[str]:
     violations = []
     for i, line in enumerate(source.splitlines()):
         stripped = line.strip()
-        m = re.match(r"(3'b[01]{3}|default):\s*;?\s*$", stripped)
+        # Generalized from `3'b[01]{3}` so any bit-width case selector
+        # (e.g. 4'b for picorv32_alu) is recognized, not just 3-bit opcodes.
+        m = re.match(r"(\d+'b[01]+|default):\s*;?\s*$", stripped)
         if m:
             violations.append(f"line {i}: empty case branch for {m.group(1)}")
     return violations

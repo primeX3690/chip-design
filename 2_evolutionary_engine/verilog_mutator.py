@@ -20,7 +20,10 @@ import re
 from dataclasses import dataclass
 from typing import Callable, List
 
-CASE_LINE_RE = re.compile(r"^(\s*)(3'b[01]{3}|default):\s*(.+?);\s*(//.*)?$")
+# Generalized from the original alu_basic-only `3'b[01]{3}` pattern so any
+# bit-width case-branch selector (e.g. 4'b for picorv32_alu's 10-way ALU
+# opcode) is recognized, not just 3-bit opcodes.
+CASE_LINE_RE = re.compile(r"^(\s*)(\d+'b[01]+|default):\s*(.+?);\s*(//.*)?$")
 
 # Operator swap table: mutating one bitwise/arithmetic op into a
 # "neighbouring" one is how the GA explores the design space.
