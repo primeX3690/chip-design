@@ -86,27 +86,15 @@ def _write_design_config(module_name: str, verilog_path: Path, run_root: Path,
     config_path.write_text(json.dumps(template, indent=2))
     return design_dir
 
-
 def run_openlane(
     verilog_path: str | Path,
     module_name: str,
     clock_port: str | None = None,
     clock_period_ns: float = 10.0,
-    docker_image: str = "ghcr.io/efabless/openlane:latest",
     pdk_root: str | Path = "~/.volare",
     timeout_sec: float = 3600.0,
     run_root: str | Path | None = None,
 ) -> OpenLaneOutcome:
-    """
-    Run the real OpenLane flow (synth -> floorplan -> place -> CTS -> route
-    -> STA -> DRC/LVS -> GDS) on `verilog_path` targeting sky130_fd_sc_hd,
-    and parse the resulting metrics.csv for real area/timing numbers.
-
-    This function is a thin, honest wrapper: it builds the design config,
-    invokes OpenLane's own `flow.tcl` inside Docker exactly as documented at
-    https://openlane2.readthedocs.io, and parses OpenLane's own metrics
-    output -- it does not reimplement any part of the P&R flow itself.
-    """
     if not openlane_available():
         return OpenLaneOutcome(ran=False, error="docker not found on PATH -- install Docker to run the real sky130 flow")
 
@@ -118,16 +106,14 @@ def run_openlane(
     design_dir = _write_design_config(module_name, verilog_path, run_root, clock_port, clock_period_ns)
 
     cmd = [
-        "docker", "run", "--rm",
-        "-v", f"{design_dir.parent.parent}:/openlane_designs",
-        "-v", f"{pdk_root}:/openlane_pdk",
-        "-e", "PDK_ROOT=/openlane_pdk",
-        docker_image,
-        "openlane",
-        f"/openlane_designs/{module_name}/config.json",
+        "python3", "-m", "librelane",
+        "--dockerized",
+        "--pdk-root", str(pdk_root),
+        str(design_dir / "config.json"),
     ]
 
-    logger.info("Launching OpenLane (sky130): %s", " ".join(cmd))
+    logger.info("Launching LibreLane (sky130, dockerized): %s", " ".join(cmd))
+    
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_sec)
     except FileNotFoundError:

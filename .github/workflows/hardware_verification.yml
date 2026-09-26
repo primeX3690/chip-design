@@ -1,9 +1,10 @@
-name: EvoHDL Real Hardware Verification (OpenLane + sky130)
+name: EvoHDL Real Hardware Verification (LibreLane + sky130)
 
-# Runs the heavy part of hardware_verification_pipeline.py (OpenLane +
+# Runs the heavy part of hardware_verification_pipeline.py (LibreLane --
+# the FOSSi Foundation-maintained successor to Efabless's OpenLane2 -- +
 # SkyWater 130nm PDK, which needs Docker + several GB of RAM) on GitHub's
 # free ubuntu-latest runner instead of your own machine -- built for
-# 8GB-RAM/Ryzen-3-class laptops where running OpenLane locally would be
+# 8GB-RAM/Ryzen-3-class laptops where running LibreLane locally would be
 # painful or impossible.
 #
 # nextpnr-ice40 (point 5) is deliberately NOT run here -- it's light enough
@@ -38,9 +39,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install -r config/requirements.txt volare
+        run: pip install -r config/requirements.txt volare librelane
 
-      - name: Free disk space (OpenLane + PDK need room on the runner)
+      - name: Free disk space (LibreLane + PDK need room on the runner)
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
           df -h
@@ -51,8 +52,8 @@ jobs:
           volare enable --pdk sky130 "$PDK_VERSION"
           echo "PDK_ROOT=$HOME/.volare" >> "$GITHUB_ENV"
 
-      - name: Pull the OpenLane Docker image
-        run: docker pull ghcr.io/efabless/openlane:latest
+      - name: Pull the LibreLane Docker image
+        run: python3 -m librelane --dockerized --smoke-test
 
       - name: Determine module name
         id: module
@@ -61,7 +62,7 @@ jobs:
           if [ -z "$MODULE" ]; then MODULE="picorv32_alu"; fi
           echo "name=$MODULE" >> "$GITHUB_OUTPUT"
 
-      - name: Run OpenLane on the best evolved design (real sky130 area + timing)
+      - name: Run LibreLane on the best evolved design (real sky130 area + timing)
         run: |
           python 4_self_improve_loop/openlane_runner.py \
             "designs/best/${{ steps.module.outputs.name }}_best.v" \
