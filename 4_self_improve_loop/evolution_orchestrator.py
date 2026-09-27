@@ -64,6 +64,28 @@ class EvolutionOrchestrator:
         self.verilator_bin = config.get("verilator_bin", "verilator")
         self.yosys_bin = config.get("yosys_bin", "yosys")
 
+        # BUG FIX (2026-09): these were computed by run_self_learner.py's
+        # apply_auto_baseline() and written into `config`, but never actually
+        # read here -- score() always fell back to fitness_evaluator.py's
+        # hardcoded BASELINE_CELLS=40 / BASELINE_DEPTH=6 (tuned for the tiny
+        # alu_basic teaching ALU). For picorv32_alu (1409 real cells), that
+        # made area_score = 40/1409 = 0.028 -- almost zero gradient -- which
+        # is why 30-40 generations of GA search never found a single smaller
+        # variant (confirmed: benchmarks/hardware_verification_report.md
+        # showed baseline == evolved, 1409 == 1409). Now module-aware.
+        self.baseline_cells = config.get("baseline_cells", 40)
+        self.baseline_depth = config.get("baseline_depth", 6)
+        self.sim_timeout = config.get("sim_timeout_sec", 20.0)
+        self.synth_timeout = config.get("synth_timeout_sec", 30.0)
+
+        # Stage-5 addition (2026-09): optional real standard-cell-library
+        # (e.g. sky130) area target -- see tech_aware_synthesizer.py's
+        # docstring. Entirely opt-in: if `liberty_path` is unset in config,
+        # every one of these is unused and behavior is identical to before.
+        self.liberty_path = config.get("liberty_path")
+        self.real_area_weight = config.get("real_area_weight", 0.25)
+        self.baseline_real_area_um2 = config.get("baseline_real_area_um2", 0.0)
+
         self.designs_dir = PROJECT_ROOT / "designs"
         # NOTE: fixed 2026-09 -- this used to be a single shared
         # dashboard/run_history.json regardless of module_name, so running
@@ -114,6 +136,13 @@ class EvolutionOrchestrator:
             module_name=self.module_name,
             verilator_bin=self.verilator_bin,
             yosys_bin=self.yosys_bin,
+            baseline_cells=self.baseline_cells,
+            baseline_depth=self.baseline_depth,
+            sim_timeout=self.sim_timeout,
+            synth_timeout=self.synth_timeout,
+            liberty_path=self.liberty_path,
+            real_area_weight=self.real_area_weight,
+            baseline_real_area_um2=self.baseline_real_area_um2,
         )
         individual.fitness_report = report
         return individual
@@ -227,3 +256,4 @@ class EvolutionOrchestrator:
             self.operator_weights = self.credit.as_weights()
 
         return self.pool.best()
+

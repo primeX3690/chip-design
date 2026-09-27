@@ -1,0 +1,63 @@
+name: EvoHDL GA Search (runs on GitHub's free server, not your laptop)
+
+# Runs run_self_learner.py itself on GitHub's free ubuntu-latest runner
+# (2 vCPU, 7 GB RAM) instead of a low-power laptop. Public repos get
+# unlimited free Actions minutes; a single job can run up to 6 hours,
+# which comfortably covers a full 40-generation picorv32_alu run.
+#
+# Trigger manually from the Actions tab, or it can be left to run
+# unattended overnight -- your laptop can be off the whole time.
+
+on:
+  workflow_dispatch:
+    inputs:
+      config_file:
+        description: "Config to run (e.g. config/config_picorv32_alu.yaml)"
+        required: true
+        default: "config/config_picorv32_alu.yaml"
+
+jobs:
+  ga-search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350   # stay under the 360-min (6h) hard limit for a job
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install EDA tools (Yosys + Verilator, apt-installable)
+        run: sudo apt-get update && sudo apt-get install -y yosys verilator
+
+      - name: Install Python dependencies
+        run: pip install -r config/requirements.txt
+
+      - name: Run the GA search
+        run: |
+          python run_self_learner.py --config "${{ github.event.inputs.config_file }}" --verbose
+
+      - name: Generate the before/after benchmark report
+        run: |
+          MODULE=$(python -c "import yaml,sys; print(yaml.safe_load(open('${{ github.event.inputs.config_file }}'))['module_name'])")
+          python 2_evolutionary_engine/baseline_compare.py \
+            --module "$MODULE" \
+            --baseline "designs/seed/${MODULE}.v" \
+            --evolved "designs/best/${MODULE}_best.v" \
+            --out-json "benchmarks/baseline_result_${MODULE}.json" \
+            --out-md "benchmarks/baseline_result_${MODULE}.md" || true
+
+      - name: Upload results (best design + reports + full run history)
+        uses: actions/upload-artifact@v4
+        with:
+          name: evohdl-ga-run-results
+          path: |
+            designs/best/
+            benchmarks/
+            dashboard/run_history_*.json
+          retention-days: 90
+
+      - name: Print benchmark summary to the job log
+        run: cat benchmarks/baseline_result_*.md >> "$GITHUB_STEP_SUMMARY" || true

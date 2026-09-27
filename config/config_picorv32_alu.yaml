@@ -41,3 +41,16 @@ num_random_test_vectors: 300
 auto_baseline: true
 baseline_cells: 1409
 baseline_depth: 23
+
+# --- Stage 5: optional real standard-cell (sky130) area target ---
+# Set this to a real sky130_fd_sc_hd__*.lib file path to make the GA
+# optimize against REAL silicon area (um^2) directly, not just the
+# generic technology-independent gate-count proxy above. Get one via:
+#     pip install volare && volare enable --pdk sky130 <a version>
+# then point liberty_path at the .lib it downloads (no Docker needed for
+# this -- Docker/OpenLane is only needed for the full place-and-route
+# verification step in hardware_verification_pipeline.py). Leave this
+# commented out to keep current behavior exactly as-is (opt-in feature).
+# liberty_path: "/home/you/.volare/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib"
+real_area_weight: 0.25
+

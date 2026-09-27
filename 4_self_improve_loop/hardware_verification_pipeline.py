@@ -5,6 +5,14 @@ Runs ONCE, after the GA finishes, on the single best genome
 (designs/best/<module>_best.v). Chains together every "make it real"
 upgrade in order, and writes one consolidated, investor-ready report:
 
+  0. equivalence_checker -- (Stage-4 addition, 2026-09) formal SAT-based
+                            equivalence check between seed and evolved --
+                            a real proof (combinational) or a strong
+                            bounded-cycle check (sequential), on TOP of the
+                            GA's finite-vector simulation testing. See
+                            3_sandbox_time/equivalence_checker.py's
+                            docstring for exactly what guarantee each case
+                            gives.
   1. baseline_compare   -- generic Yosys `synth` proxy: cell count + logic
                             depth, seed vs evolved (fast, always available).
   2. openlane_runner     -- real synthesis + place + route on the actual
@@ -53,6 +61,9 @@ from openlane_runner import run_openlane, openlane_available  # noqa: E402
 from opensta_runner import run_sta, opensta_available, find_sky130_liberty  # noqa: E402
 from nextpnr_runner import run_nextpnr, nextpnr_available  # noqa: E402
 
+sys.path.append(str(PROJECT_ROOT / "3_sandbox_time"))
+from equivalence_checker import check_equivalence  # noqa: E402
+
 logger = logging.getLogger("EvoHDL.hardware_verification_pipeline")
 
 REPORT_DIR = PROJECT_ROOT / "benchmarks"
@@ -67,6 +78,8 @@ def run_full_verification(
     yosys_bin: str = "yosys",
     sta_bin: str = "sta",
     pdk_root: str = "~/.volare",
+    sequential: bool = False,
+    seq_cycles: int = 20,
 ) -> dict:
     report: dict = {
         "module_name": module_name,
@@ -75,6 +88,24 @@ def run_full_verification(
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "stages": {},
     }
+
+    # -- Stage 0: formal (SAT) equivalence check, seed vs evolved ----------
+    # Runs before everything else: if this can't even prove/strongly-check
+    # equivalence, that's important context for reading every metric below,
+    # since generic_synth/openlane/opensta/nextpnr all measure the EVOLVED
+    # design alone and say nothing about whether it still behaves like the
+    # seed beyond the GA's finite test vectors.
+    logger.info("Stage 0/4: formal equivalence check (seed vs evolved, Yosys SAT)")
+    try:
+        baseline_src = Path(baseline_rtl_path).read_text()
+        evolved_src = Path(evolved_rtl_path).read_text()
+        eq = check_equivalence(
+            baseline_src, evolved_src, module_name=module_name,
+            sequential=sequential, seq_cycles=seq_cycles, yosys_bin=yosys_bin,
+        )
+        report["stages"]["equivalence"] = eq.__dict__
+    except Exception as e:  # noqa: BLE001
+        report["stages"]["equivalence"] = {"checked": False, "error": str(e)}
 
     # -- Stage 1: generic Yosys proxy (always runs, this is the fast metric
     # the GA itself optimizes against) -----------------------------------
@@ -136,9 +167,31 @@ def render_markdown(report: dict) -> str:
         f"Baseline (human-written reference): `{report['baseline_rtl_path']}`",
         f"Evolved (GA best individual): `{report['evolved_rtl_path']}`",
         "",
-        "## 1. Generic synthesis (Yosys `synth`, technology-independent)",
+        "## 0. Formal equivalence check (seed vs evolved, Yosys SAT)",
         "",
     ]
+
+    eq = report["stages"].get("equivalence", {})
+    if eq.get("checked"):
+        if eq.get("bounded"):
+            verdict = (
+                f"**Equivalent for {eq.get('seq_cycles', '?')} clock cycles from reset "
+                f"(bounded check, not an unbounded proof).**"
+                if eq.get("equivalent") else
+                f"**NOT equivalent** -- SAT solver found a real counterexample within "
+                f"{eq.get('seq_cycles', '?')} cycles. {eq.get('error', '')}"
+            )
+        else:
+            verdict = (
+                "**Formally proven equivalent for all possible inputs** (SAT UNSAT)."
+                if eq.get("equivalent") else
+                f"**NOT proven equivalent.** {eq.get('error', 'SAT solver found a counterexample or the result was inconclusive.')}"
+            )
+        lines.append(f"- {verdict}")
+    else:
+        lines.append(f"_Not available: {eq.get('error', 'unknown error')}_")
+
+    lines += ["", "## 1. Generic synthesis (Yosys `synth`, technology-independent)", ""]
 
     gs = report["stages"].get("generic_synth", {})
     if gs.get("ran"):
@@ -216,6 +269,11 @@ def main():
     parser.add_argument("--yosys-bin", default="yosys")
     parser.add_argument("--sta-bin", default="sta")
     parser.add_argument("--pdk-root", default="~/.volare")
+    parser.add_argument("--sequential", action="store_true",
+                         help="Design is clocked (e.g. counter_4bit) -- use a bounded-cycle "
+                              "equivalence check instead of the unbounded combinational proof.")
+    parser.add_argument("--seq-cycles", type=int, default=20,
+                         help="Number of clock cycles to check equivalence over when --sequential is set.")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -223,6 +281,7 @@ def main():
     report = run_full_verification(
         args.module, args.baseline, args.evolved,
         args.clock_port, args.clock_period_ns, args.yosys_bin, args.sta_bin, args.pdk_root,
+        args.sequential, args.seq_cycles,
     )
 
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
@@ -236,3 +295,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

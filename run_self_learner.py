@@ -140,6 +140,12 @@ def main():
             yosys_bin=config.get("yosys_bin", "yosys"),
             sta_bin=config.get("sta_bin", "sta"),
             pdk_root=config.get("pdk_root", "~/.volare"),
+            # `sequential` should be set explicitly in the module's config
+            # (e.g. config_counter_4bit.yaml) since a clocked design needs a
+            # bounded-cycle equivalence check instead of the unbounded
+            # combinational proof -- see equivalence_checker.py's docstring.
+            sequential=config.get("sequential", False),
+            seq_cycles=config.get("seq_cycles", 20),
         )
         REPORT_DIR.mkdir(parents=True, exist_ok=True)
         (REPORT_DIR / "hardware_verification_report.json").write_text(json.dumps(report, indent=2, default=str))
@@ -149,4 +155,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

@@ -34,3 +34,10 @@ num_random_test_vectors: 200
 auto_baseline: true
 baseline_cells: 40
 baseline_depth: 6
+
+# --- Formal equivalence check (see 3_sandbox_time/equivalence_checker.py) ---
+# counter_4bit is CLOCKED, so equivalence must be checked over a bounded
+# number of cycles from reset, not as a single-cycle combinational proof.
+sequential: true
+seq_cycles: 20
+

@@ -1,0 +1,11 @@
+{
+  "baseline_cell_count": 1318.0,
+  "evolved_cell_count": 1318.0,
+  "cell_count_improvement_pct": 0.0,
+  "baseline_logic_depth": 23.0,
+  "evolved_logic_depth": 23.0,
+  "logic_depth_improvement_pct": 0.0,
+  "module_name": "picorv32_alu",
+  "baseline_rtl_path": "designs/seed/picorv32_alu.v",
+  "evolved_rtl_path": "designs/best/picorv32_alu_best.v"
+}

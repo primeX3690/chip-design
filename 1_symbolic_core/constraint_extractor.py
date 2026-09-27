@@ -20,7 +20,8 @@ from dataclasses import dataclass
 from typing import List
 
 sys.path.append(str(Path(__file__).resolve().parent.parent / "3_sandbox_time"))
-from process_guard import run_guarded  # noqa: E402
+# (yosys_synthesizer.synthesize_design is imported lazily inside
+# extract_constraints() to avoid a circular-import risk at module load time)
 
 PORT_RE = re.compile(r"(input|output)\s+(reg|wire)?\s*(\[\d+:\d+\])?\s*(\w+)")
 
@@ -57,50 +58,43 @@ def extract_constraints(
     yosys_bin: str = "yosys",
     timeout_sec: float = 30.0,
 ) -> DesignConstraints:
-    import tempfile
-    import shutil
+    # BUG FIX (2026-09): this used to run its OWN, slightly different Yosys
+    # script (missing the `fsm`/`memory` opt passes and, critically, the
+    # final `opt_clean` that yosys_synthesizer.py's live per-individual
+    # scoring always runs). That mismatch meant "baseline_cells" profiled
+    # here for a fresh module never actually matched what score() measures
+    # for the IDENTICAL seed genome during the GA run -- so even an
+    # unmutated, exactly-tied-to-baseline individual scored a fitness below
+    # the correct value of 1.0 (confirmed: a real 40-generation
+    # picorv32_alu run reported baseline_compare.py cell_count/logic_depth
+    # tied exactly 1318=1318 / 23=23, yet best_fitness was 0.8522, not
+    # 1.0 -- and that number never moved from generation 0's value at all).
+    # Now both paths call the exact same synthesize_design(), so
+    # baseline_cells/baseline_depth are always measured identically to how
+    # every individual is scored -- a tied design is guaranteed fitness=1.0.
+    sys.path.append(str(Path(__file__).resolve().parent.parent / "3_sandbox_time"))
+    from yosys_synthesizer import synthesize_design  # noqa: E402
 
-    workdir = Path(tempfile.mkdtemp(prefix="evohdl_constraints_"))
-    try:
-        design_path = workdir / f"{module_name}.v"
-        design_path.write_text(verilog_source)
-        script = f"""
-read_verilog {design_path.as_posix()}
-hierarchy -check -top {module_name}
-proc; opt; techmap; opt
-synth -top {module_name}
-stat
-ltp
-"""
-        script_path = workdir / "constraints.ys"
-        script_path.write_text(script)
+    ports = extract_ports(verilog_source)
+    outcome = synthesize_design(verilog_source, module_name=module_name, yosys_bin=yosys_bin, timeout_sec=timeout_sec)
 
-        result = run_guarded([yosys_bin, "-Q", "-T", "-s", str(script_path)], timeout_sec=timeout_sec, cwd=str(workdir))
-        ports = extract_ports(verilog_source)
-
-        if not result.ok:
-            return DesignConstraints(
-                module_name=module_name,
-                ports=ports,
-                baseline_cells=40,
-                baseline_wires=20,
-                baseline_depth=6,
-                notes=f"yosys unavailable or failed ({result.stderr[:200]}); using generic defaults",
-            )
-
-        cell_match = re.search(r"Number of cells:\s*(\d+)", result.stdout)
-        wire_match = re.search(r"Number of wires:\s*(\d+)", result.stdout)
-        depth_match = re.search(r"Longest topological path.*?(\d+)\s*step", result.stdout, re.IGNORECASE | re.DOTALL)
-
+    if not outcome.synthesized:
         return DesignConstraints(
             module_name=module_name,
             ports=ports,
-            baseline_cells=int(cell_match.group(1)) if cell_match else 40,
-            baseline_wires=int(wire_match.group(1)) if wire_match else 20,
-            baseline_depth=int(depth_match.group(1)) if depth_match else 6,
+            baseline_cells=40,
+            baseline_wires=20,
+            baseline_depth=6,
+            notes=f"yosys unavailable or failed ({outcome.error[:200]}); using generic defaults",
         )
-    finally:
-        shutil.rmtree(workdir, ignore_errors=True)
+
+    return DesignConstraints(
+        module_name=module_name,
+        ports=ports,
+        baseline_cells=outcome.cell_count or 40,
+        baseline_wires=outcome.wire_count or 20,
+        baseline_depth=outcome.logic_depth or 6,
+    )
 
 
 if __name__ == "__main__":
