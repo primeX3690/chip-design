@@ -446,4 +446,3 @@ if __name__ == "__main__":
     print(f"Wrote demo testbench to {p}")
     p2 = write_testbench("picorv32_alu", "/tmp/evohdl_tb_picorv32_alu_demo.cpp")
     print(f"Wrote demo testbench to {p2}")
-

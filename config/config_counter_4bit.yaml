@@ -40,4 +40,3 @@ baseline_depth: 6
 # number of cycles from reset, not as a single-cycle combinational proof.
 sequential: true
 seq_cycles: 20
-

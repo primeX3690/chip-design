@@ -80,3 +80,4 @@ def test_missing_liberty_file_fails_fast_without_running_yosys(monkeypatch):
     outcome = tas.synthesize_tech_mapped("module x; endmodule", "x", "/does/not/exist.lib")
     assert outcome.synthesized is False
     assert calls == [], "should never shell out to Yosys when the .lib path doesn't exist"
+

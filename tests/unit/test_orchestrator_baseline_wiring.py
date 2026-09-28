@@ -63,3 +63,4 @@ def test_evaluate_one_falls_back_to_sane_defaults_when_config_omits_baselines():
     orch = eo.EvolutionOrchestrator({"module_name": "alu_basic"})
     assert orch.baseline_cells == 40
     assert orch.baseline_depth == 6
+

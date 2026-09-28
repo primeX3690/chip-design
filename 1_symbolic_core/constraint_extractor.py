@@ -101,3 +101,4 @@ if __name__ == "__main__":
     seed = Path(__file__).resolve().parent.parent / "designs" / "seed" / "alu_basic.v"
     c = extract_constraints(seed.read_text(), "alu_basic")
     print(c)
+

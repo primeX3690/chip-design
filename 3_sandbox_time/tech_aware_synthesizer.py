@@ -163,4 +163,3 @@ if __name__ == "__main__":
     src = Path(args.verilog).read_text()
     outcome = synthesize_tech_mapped(src, args.module, args.liberty)
     print(outcome)
-

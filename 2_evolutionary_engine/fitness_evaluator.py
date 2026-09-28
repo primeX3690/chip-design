@@ -162,4 +162,3 @@ if __name__ == "__main__":
     seed_path = Path(__file__).resolve().parent.parent / "designs" / "seed" / "alu_basic.v"
     report = score(seed_path.read_text())
     print(report)
-

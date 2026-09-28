@@ -95,3 +95,4 @@ def test_a_tied_design_now_scores_fitness_one(monkeypatch):
         f"expected fitness=1.0 for a design exactly tied to baseline, got {report.fitness} -- "
         "baseline profiling and live scoring have drifted apart again."
     )
+

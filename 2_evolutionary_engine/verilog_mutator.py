@@ -102,6 +102,9 @@ def mutate_shift_amount(source: str, rng: random.Random) -> tuple[str, Mutation]
     return new_source, Mutation("shift_amount", f"{op} {old_amt} -> {op} {new_amt}")
 
 
+from resynth_operator import mutate_resynth_alt_strategy, configure as configure_resynth  # noqa: E402,F401
+
+
 def mutate_drop_redundant_default(source: str, rng: random.Random) -> tuple[str, Mutation]:
     """Occasionally remove the carry_out reset line to test whether it is redundant
     (this is intentionally allowed to fail fitness -- exploring 'is this logic
@@ -120,6 +123,7 @@ MUTATION_OPERATORS: List[Callable[[str, random.Random], tuple[str, Mutation]]] =
     mutate_constant_tweak,
     mutate_shift_amount,
     mutate_drop_redundant_default,
+    mutate_resynth_alt_strategy,
 ]
 
 # Short "kind" names as they actually appear in Mutation.kind / mutation_history,
@@ -132,6 +136,7 @@ MUTATION_KIND_NAMES: List[str] = [
     "constant_tweak",
     "shift_amount",
     "drop_redundant",
+    "resynth_alt_strategy",
 ]
 
 

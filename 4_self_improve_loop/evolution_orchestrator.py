@@ -32,7 +32,7 @@ sys.path.append(str(PROJECT_ROOT / "4_self_improve_loop"))
 sys.path.append(str(PROJECT_ROOT / "1_symbolic_core"))
 
 from gene_pool import GenePool, Individual  # noqa: E402
-from verilog_mutator import mutate  # noqa: E402
+from verilog_mutator import mutate, configure_resynth  # noqa: E402
 from crossover_engine import crossover  # noqa: E402
 from fitness_evaluator import score  # noqa: E402
 from design_rule_checker import run_all_checks  # noqa: E402
@@ -98,6 +98,12 @@ class EvolutionOrchestrator:
     # ---------------------------------------------------------------- setup
 
     def bootstrap(self):
+        # Stage-6 addition (2026-09): resynth_alt_strategy needs to know
+        # which module/yosys binary to resynthesize against -- must be set
+        # before ANY mutation happens, including the diversifying mutations
+        # generate_initial_population() applies below.
+        configure_resynth(self.module_name, self.yosys_bin, self.synth_timeout)
+
         seed_path = PROJECT_ROOT / self.config.get("seed_design", "designs/seed/alu_basic.v")
         seed_source = load_seed_design(seed_path)
         drc = run_all_checks(seed_source)
@@ -256,4 +262,3 @@ class EvolutionOrchestrator:
             self.operator_weights = self.credit.as_weights()
 
         return self.pool.best()
-

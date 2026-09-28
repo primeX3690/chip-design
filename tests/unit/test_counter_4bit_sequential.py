@@ -67,3 +67,4 @@ def test_render_testbench_produces_compilable_looking_cpp():
         "testbench must toggle clk low-then-high exactly once per cycle "
         "inside the loop body"
     )
+

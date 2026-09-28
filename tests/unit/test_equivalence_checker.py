@@ -68,3 +68,4 @@ def test_sequential_flag_is_recorded_as_bounded():
     outcome = ec2.EquivalenceOutcome(checked=True, equivalent=True, bounded=True, seq_cycles=20)
     assert outcome.bounded is True
     assert outcome.seq_cycles == 20
+
