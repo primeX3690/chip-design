@@ -66,3 +66,15 @@ def test_render_testbench_embeds_module_name():
     assert "Vpicorv32_alu.h" in cpp
     assert "EVOHDL_RESULT" in cpp
     assert "reg_op1" in cpp and "alu_out" in cpp
+
+
+def test_vectors_exercise_undefined_opcodes_10_to_15():
+    """Regression: a GA mutant that changed behaviour on opcode 13 passed
+    simulation because no vector ever used opcodes 10..15; only the formal
+    equivalence check caught it. Every opcode must now be exercised, and
+    the golden model must return 0 for the undefined ones (seed's default)."""
+    from testbench_generator import _generate_picorv32_alu_vectors, golden_picorv32_alu
+    ops = {v[2] for v in _generate_picorv32_alu_vectors(50, seed=1)}
+    assert ops == set(range(16))
+    assert golden_picorv32_alu(0, 0, 13) == 0
+    assert golden_picorv32_alu(0xFFFFFFFF, 5, 15) == 0

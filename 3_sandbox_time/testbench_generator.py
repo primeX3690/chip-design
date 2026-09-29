@@ -246,7 +246,13 @@ def _generate_picorv32_alu_vectors(num_random: int = 200, seed: int | None = Non
 
     corner_values = [0x00000000, 0x00000001, 0x7FFFFFFF, 0x80000000,
                       0xFFFFFFFE, 0xFFFFFFFF, 0x12345678, 0xDEADBEEF]
-    for alu_op in range(10):  # 0000..1001, see designs/seed/picorv32_alu.v
+    # BUG FIX (2026-09): this used to sweep only opcodes 0..9 (the defined
+    # ones). The seed also defines opcodes 10..15 explicitly (`default:
+    # alu_out = 32'b0`), but with no vectors there a mutant could silently
+    # change that behaviour and still pass simulation. A real GA run produced
+    # such a mutant (alu_op=13 -> outputs 1 instead of 0) that only the Stage-4
+    # formal equivalence check caught. Now all 16 opcodes are exercised.
+    for alu_op in range(16):  # 0000..1111 (0..9 defined ops, 10..15 -> 0)
         for a in corner_values:
             for b in corner_values:
                 vectors.append((a, b, alu_op, golden_picorv32_alu(a, b, alu_op)))
@@ -254,7 +260,7 @@ def _generate_picorv32_alu_vectors(num_random: int = 200, seed: int | None = Non
     for _ in range(num_random):
         a = rng.randint(0, 2**32 - 1)
         b = rng.randint(0, 2**32 - 1)
-        alu_op = rng.randint(0, 9)
+        alu_op = rng.randint(0, 15)
         vectors.append((a, b, alu_op, golden_picorv32_alu(a, b, alu_op)))
 
     return vectors

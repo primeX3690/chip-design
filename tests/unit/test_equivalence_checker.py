@@ -69,3 +69,19 @@ def test_sequential_flag_is_recorded_as_bounded():
     assert outcome.bounded is True
     assert outcome.seq_cycles == 20
 
+
+def test_failed_verify_proof_with_nonzero_exit_is_not_equivalent_not_tool_error(monkeypatch):
+    """Regression for a real bug: `sat -verify` exits NON-ZERO when the proof
+    fails (a genuine counterexample). That must be reported as checked=True /
+    equivalent=False, not mislabeled as an unchecked tool error."""
+    stdout = "SAT proof finished - model found: FAIL!\n"
+    stderr = "ERROR: Called with -verify and proof did fail!\n"
+
+    def fake_run_guarded(command, timeout_sec, cwd):
+        return GuardedResult(command=command, returncode=1, stdout=stdout, stderr=stderr)
+
+    monkeypatch.setattr(ec, "run_guarded", fake_run_guarded)
+    outcome = ec.check_equivalence("module x; endmodule", "module x; endmodule", module_name="x")
+    assert outcome.checked is True
+    assert outcome.equivalent is False
+    assert "counterexample" in outcome.error

@@ -90,7 +90,7 @@ proc; opt_clean
 miter -equiv -flatten -make_outputs gold gate miter
 hierarchy -top miter
 flatten miter
-sat -verify -prove trigger 0 -set-init-undef -ignore_div_by_zero miter
+sat -verify -prove trigger 0 -set-init-undef -ignore_div_by_zero -show-inputs -show-outputs miter
 """
 
 
@@ -106,7 +106,7 @@ proc; opt_clean
 miter -equiv -flatten -make_outputs gold gate miter
 hierarchy -top miter
 flatten miter
-sat -verify -prove trigger 0 -set-init-undef -ignore_div_by_zero -seq {seq_cycles} miter
+sat -verify -prove trigger 0 -set-init-undef -ignore_div_by_zero -show-inputs -show-outputs -seq {seq_cycles} miter
 """
 
 
@@ -148,6 +148,23 @@ def check_equivalence(
             timeout_sec=timeout_sec,
             cwd=str(workdir),
         )
+
+        # BUG FIX (2026-09): `sat -verify` makes Yosys exit NON-ZERO when the
+        # proof fails ("ERROR: Called with -verify and proof did fail!"), i.e.
+        # exactly when a real counterexample exists. The old code treated any
+        # non-zero exit as a tool failure (checked=False) and never looked at
+        # the verdict, so a genuine "NOT equivalent" was mislabeled as an
+        # inconclusive tool error. Check the SAT verdict in the output first.
+        combined = (result.stdout or "") + "\n" + (result.stderr or "")
+        if not result.timed_out and not PROOF_UNSAT_RE.search(combined) and (
+            PROOF_SAT_RE.search(combined) or "proof did fail" in combined
+        ):
+            return EquivalenceOutcome(
+                checked=True, equivalent=False, bounded=sequential,
+                seq_cycles=seq_cycles if sequential else 0,
+                log=combined[-4000:],
+                error="SAT solver found a real counterexample -- designs differ (see log for the failing inputs/outputs).",
+            )
 
         if not result.ok:
             reason = "timeout" if result.timed_out else "yosys/sat error"
