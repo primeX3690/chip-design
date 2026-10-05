@@ -5,7 +5,7 @@
 //
 // NOTE: this design has a DIFFERENT port contract than alu_basic.v, so it
 // needs its own testbench. See notes at the bottom of this file for the
-// two-line change required in 3_sandbox_time/testbench_generator.py to
+// two-line change required in evohdl/sandbox/testbench_generator.py to
 // point it at a comparator-specific golden model instead of golden_alu().
 
 module comparator_4bit (
@@ -36,7 +36,7 @@ endmodule
 
 // --- To evolve this design instead of alu_basic ---------------------------
 // 1. Add a `golden_comparator(x, y) -> (eq, gt, lt)` function to
-//    3_sandbox_time/testbench_generator.py (mirrors golden_alu()).
+//    evohdl/sandbox/testbench_generator.py (mirrors golden_alu()).
 // 2. Add a comparator-specific CPP_TEMPLATE variant (3-output struct
 //    instead of result/carry_out) and a render_comparator_testbench()
 //    function.

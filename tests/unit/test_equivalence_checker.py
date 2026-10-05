@@ -2,7 +2,7 @@
 tests/unit/test_equivalence_checker.py
 
 Regression test for the Stage-4 addition (2026-09): formal SAT-based
-equivalence checking (3_sandbox_time/equivalence_checker.py). This only
+equivalence checking (evohdl/sandbox/equivalence_checker.py). This only
 tests the *parsing/wiring* logic by mocking run_guarded's output with
 real, verbatim strings Yosys is known to print, so it runs without a real
 Yosys/SAT-solver install. It does NOT prove the yosys script itself is
@@ -12,10 +12,8 @@ correct end-to-end -- that needs a real Yosys run on the user's machine
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[2] / "3_sandbox_time"))
-
-import equivalence_checker as ec  # noqa: E402
-from process_guard import GuardedResult  # noqa: E402
+from evohdl.sandbox import equivalence_checker as ec  # noqa: E402
+from evohdl.sandbox.process_guard import GuardedResult  # noqa: E402
 
 
 def _mock_guarded(returncode: int, stdout: str, timed_out: bool = False):
@@ -64,7 +62,7 @@ def test_sequential_flag_is_recorded_as_bounded():
     """Sequential (bounded-cycle) results must be distinguishable from the
     unbounded combinational proof -- a caller (or pitch deck!) should never
     claim the stronger guarantee for the weaker check."""
-    import equivalence_checker as ec2
+    from evohdl.sandbox import equivalence_checker as ec2
     outcome = ec2.EquivalenceOutcome(checked=True, equivalent=True, bounded=True, seq_cycles=20)
     assert outcome.bounded is True
     assert outcome.seq_cycles == 20

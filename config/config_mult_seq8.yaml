@@ -1,0 +1,70 @@
+# EvoHDL configuration: multi-cycle 8x8 shift-add multiplier, sequential
+# All orchestrator parameters live here so a run is fully reproducible
+# from this one file + the seed design.
+
+# --- Design under evolution -------------------------------------------------
+module_name: mult_seq8
+seed_design: designs/seed/mult_seq8.v
+
+# --- Genetic algorithm -------------------------------------------------------
+population_size: 24
+generations: 30
+elite_count: 2            # top-N individuals carried forward unchanged each generation
+tournament_k: 3            # tournament selection group size
+crossover_rate: 0.6        # probability a child is produced via crossover before mutation
+mutation_rate: 0.8         # probability mutation is additionally applied to a child
+random_seed: 42            # set to null for a non-deterministic run
+
+# --- Execution ---------------------------------------------------------------
+max_parallel_evals: 4      # thread pool size for simulate+synthesize (bind to CPU count)
+
+# --- Toolchain paths (override if not on PATH) --------------------------------
+verilator_bin: verilator
+yosys_bin: yosys
+
+# --- Simulation / synthesis limits -------------------------------------------
+sim_timeout_sec: 60
+synth_timeout_sec: 60
+mem_limit_mb: 1024
+num_random_test_vectors: 200
+
+# --- Fitness normalization (see evohdl/evolutionary_engine/fitness_evaluator.py) ---
+# These are overwritten automatically at first run by evohdl/symbolic_core/
+# constraint_extractor.py profiling the seed design, if auto_baseline is true.
+auto_baseline: true
+baseline_cells: 250
+baseline_depth: 14
+
+# --- Formal equivalence check (see evohdl/sandbox/equivalence_checker.py) ---
+# counter_4bit is CLOCKED, so equivalence must be checked over a bounded
+# number of cycles from reset, not as a single-cycle combinational proof.
+sequential: true
+seq_cycles: 20
+
+# --- 2026-10 search upgrades (all optional; remove a key to get the old behaviour) -------
+# Fitness: uncapped relative gain. fitness = 1.0 + area_weight*(fraction of area cut) + delay_weight*(fraction of depth cut).
+# A design tied with the seed scores exactly 1.0 ("no improvement"); every extra bit of reduction adds linearly.
+fitness_mode: relative_gain      # or: legacy_ratio (old 0.5 + w*baseline/value form)
+area_weight: 2.0
+delay_weight: 1.0
+
+# Verification: hybrid = Yosys formal equivalence vs the seed first (proof => skip Verilator),
+# counterexample => reject, inconclusive/unproven => fall back to simulation.
+# simulation = old behaviour (Verilator only). formal = proof required, no simulation.
+verification_mode: hybrid
+equiv_timeout_sec: 30
+
+# Island model: sub-populations evolve separately and swap their best every few generations.
+# islands: 1 == old single population.
+islands: 3
+migration_interval: 5
+migration_count: 2
+migration_topology: ring         # or: random
+
+# --- Sequential-design proof settings (evohdl/sandbox/formal_pipeline.py) ----
+# The proof stage auto-detects the reset port from the port names; set these only to override.
+# reset_port: rst_n
+# reset_active_low: true
+formal_depth: 24            # clock cycles for the bounded fallback check
+formal_timeout_sec: 180
+use_eqy: auto               # auto | always | never (eqy is optional)

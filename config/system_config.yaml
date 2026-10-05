@@ -28,9 +28,29 @@ synth_timeout_sec: 60
 mem_limit_mb: 1024
 num_random_test_vectors: 200
 
-# --- Fitness normalization (see 2_evolutionary_engine/fitness_evaluator.py) ---
-# These are overwritten automatically at first run by 1_symbolic_core/
+# --- Fitness normalization (see evohdl/evolutionary_engine/fitness_evaluator.py) ---
+# These are overwritten automatically at first run by evohdl/symbolic_core/
 # constraint_extractor.py profiling the seed design, if auto_baseline is true.
 auto_baseline: true
 baseline_cells: 40
 baseline_depth: 6
+
+# --- 2026-10 search upgrades (all optional; remove a key to get the old behaviour) -------
+# Fitness: uncapped relative gain. fitness = 1.0 + area_weight*(fraction of area cut) + delay_weight*(fraction of depth cut).
+# A design tied with the seed scores exactly 1.0 ("no improvement"); every extra bit of reduction adds linearly.
+fitness_mode: relative_gain      # or: legacy_ratio (old 0.5 + w*baseline/value form)
+area_weight: 2.0
+delay_weight: 1.0
+
+# Verification: hybrid = Yosys formal equivalence vs the seed first (proof => skip Verilator),
+# counterexample => reject, inconclusive/unproven => fall back to simulation.
+# simulation = old behaviour (Verilator only). formal = proof required, no simulation.
+verification_mode: hybrid
+equiv_timeout_sec: 30
+
+# Island model: sub-populations evolve separately and swap their best every few generations.
+# islands: 1 == old single population.
+islands: 3
+migration_interval: 5
+migration_count: 2
+migration_topology: ring         # or: random

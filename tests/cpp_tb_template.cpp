@@ -1,7 +1,7 @@
 // cpp_tb_template.cpp
 // -----------------------------------------------------------------------
 // Reference / documentation copy of the testbench structure EvoHDL
-// generates dynamically at runtime (see 3_sandbox_time/testbench_generator.py).
+// generates dynamically at runtime (see evohdl/sandbox/testbench_generator.py).
 // This static file is NOT compiled by the pipeline -- the real testbench
 // is generated fresh for every evaluation so its embedded test vectors can
 // be varied (random seed) or extended without editing C++ by hand.

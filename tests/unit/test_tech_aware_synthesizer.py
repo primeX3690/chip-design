@@ -2,7 +2,7 @@
 tests/unit/test_tech_aware_synthesizer.py
 
 Regression test for the Stage-5 addition (2026-09): real standard-cell-
-library-mapped synthesis (3_sandbox_time/tech_aware_synthesizer.py). Only
+library-mapped synthesis (evohdl/sandbox/tech_aware_synthesizer.py). Only
 tests the parsing/wiring logic via mocked Yosys `stat -liberty` output
 (real, verbatim format Yosys is known to print) -- does not need a real
 .lib file or Yosys install. See the module's own `__main__` block for a
@@ -12,10 +12,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[2] / "3_sandbox_time"))
-
-import tech_aware_synthesizer as tas  # noqa: E402
-from process_guard import GuardedResult  # noqa: E402
+from evohdl.sandbox import tech_aware_synthesizer as tas  # noqa: E402
+from evohdl.sandbox.process_guard import GuardedResult  # noqa: E402
 
 REAL_STAT_LIBERTY_OUTPUT = """
 === picorv32_alu ===

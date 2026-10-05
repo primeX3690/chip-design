@@ -1,21 +1,76 @@
-# EvoHDL — AI-Powered RTL Optimization Engine
+# EvoHDL — Search-Based RTL Optimization Experiments
 
-EvoHDL is a self-improving hardware design system. It evolves Verilog RTL
-using genetic programming, scoring every candidate design for **functional
-correctness** (via Verilator simulation) and **area/timing efficiency**
-(via Yosys synthesis) — automatically shrinking and speeding up a digital
-circuit generation over generation, without a human hand-tuning the RTL.
+EvoHDL is an experiment in search-based RTL optimization. It mutates Verilog
+with a genetic algorithm and scores every candidate for **functional
+correctness** (Verilator simulation) and **area/timing proxies** (Yosys
+synthesis). It is a thin orchestration layer on top of open-source EDA tools
+(Yosys, Verilator, OpenLane, OpenSTA, nextpnr) -- it is not itself a synthesis,
+place-and-route or timing engine.
 
-This repository ships a working end-to-end reference implementation that
-evolves an 8-bit ALU. The architecture generalizes to other combinational
-and sequential blocks by swapping the seed design and testbench.
+## Current status (read this first)
 
-## Why this matters (for reviewers / investors / accelerators)
+- **No demonstrated optimization yet** (the 2026-10 upgrades below target this but are unmeasured). Best recorded runs: `picorv32_alu` 0.0%
+  improvement (cells and depth unchanged), `alu_basic` about 3% on cell count.
+  See [`benchmarks/STATUS.md`](benchmarks/STATUS.md) for exactly what is and is
+  not measured, and `benchmarks/archive/` for the historical runs.
+- **No real silicon numbers yet.** The OpenLane/sky130 and OpenSTA stages are
+  implemented as wrappers but have never been run to completion.
+- **Why the search stalls:** random text edits (operator swap, constant flip)
+  change the design's meaning and almost always fail the correctness check,
+  while an already-clean ALU leaves little for semantics-preserving edits to
+  gain. See "Current Limitations".
 
-Chip design cycles are dominated by manual RTL iteration and synthesis
-sweeps that senior engineers do by hand. EvoHDL is a proof-of-concept for
-automating that inner loop with search + real EDA tool feedback instead of
-a black-box neural net guessing at gate counts. The result is:
+Everything below describes what the code *can* do, not results it has achieved.
+
+## Native EDA kernel (no external tools) -- new in the v4 release
+
+`python -m evohdl.eda flow design.v --top m` runs a complete tool-independent flow: elaborate to an And-Inverter Graph,
+optimize (rewrite / balance / SAT sweeping), **prove** the result equivalent with an in-house CDCL SAT solver, map onto a
+Liberty library, prove the netlist equivalent again, then static timing (NLDM + SDC subset) and a power estimate.
+The formal pipeline also uses it as a fallback, so a proof is possible on a machine with *no* Yosys at all.
+Read [`docs/EDA_KERNEL.md`](docs/EDA_KERNEL.md) first -- it lists exactly what is and is not covered (physical design,
+physical DRC/LVS, real benchmark suites and a real PDK library are **not** included; the bundled `.lib` is fictional).
+
+## The commercial wedge and how to prove it (v5)
+
+Chosen wedge (a hypothesis, not a validated market): a **formally verified optimization / equivalence layer on top of the
+open-source flow**, for teams that cannot afford commercial licences. The proof tooling is in the repo:
+
+- `python -m evohdl.eda compare --lib <real.lib>` (or `LIB=... bash scripts/run_head_to_head.sh`): head-to-head against Yosys+ABC
+  on a suite, with the verified pre-pass, environment fingerprints and an auto-generated "what this does NOT show" section.
+  Losses and unsupported designs are listed, and an unverified result is never counted as a win.
+- `scripts/fpga_ice40_demo.sh`: same design through plain Yosys vs the verified pre-pass on iCE40, then place & route and a board.
+- [`docs/WEDGE_PLAN.md`](docs/WEDGE_PLAN.md) (go/no-go gate, claims policy, investor checklist, India programme checklist) and
+  [`docs/CUSTOMER_DISCOVERY.md`](docs/CUSTOMER_DISCOVERY.md). **No head-to-head result exists yet**: it needs a machine with Yosys.
+
+## What changed in the 2026-10 upgrade (A-H)
+
+All of these are implemented and unit-tested **with the EDA tools mocked**; none has been run end to end
+against a real Yosys/Verilator yet (see `benchmarks/STATUS.md`). Run
+`python -m evohdl.sandbox.equivalence_checker --selftest` and `python -m evohdl.sandbox.formal_pipeline --selftest` first.
+
+| Area | What it is | Config |
+|---|---|---|
+| Fitness (A/E) | Uncapped relative gain: `1.0 + area_weight*cut + delay_weight*cut`; tie with seed == exactly 1.0 | `fitness_mode`, `area_weight`, `delay_weight` |
+| Yosys pass-guided mutation (B) | `yosys_pass_pipeline` operator: random ordered subset of `wreduce/opt_expr/opt_muxtree/opt_reduce/peepopt/alumacc+share/opt_merge/opt_clean`, optional `extract_fa`/`extract_reduce`, and an `abc -g` gate-set swap; output is always valid Verilog | automatic (operator weights adapt) |
+| Formal verification (C/G) | `hybrid`: Yosys equivalence vs the seed first (miter+SAT for combinational, `equiv_make/equiv_simple/equiv_induct` for sequential); proof skips Verilator, counterexample rejects, unproven falls back to simulation. Plus a per-run evaluation cache so identical genomes are never re-checked | `verification_mode`, `equiv_timeout_sec` |
+| Island model (D) | Sub-populations with per-island mutation pressure, ring/random migration of best individuals | `islands`, `migration_*` |
+| Structure-aware operators (F) | `commutative_swap`, `demorgan`, `sub_as_add`, `ternary_invert` (semantics-preserving identities) | automatic |
+| Syntax-tree mutation | `evohdl/hdl/` parser+printer; 10 AST operators (`ast_commutative`, `ast_reassociate`, `ast_demorgan`, `ast_distribute`/factor, `ast_sub_as_add`, `ast_ternary_invert`, `ast_simplify`, `ast_if_ternary`, `ast_case_reorder`, `ast_cse`). Verified by differential pure-Python simulation (original vs mutant) on random stimulus | automatic |
+| Sequential designs | `fsm_seqdet`, `mult_seq8` seeds + generic cycle-trace testbench + golden models; crossover understands FSM state labels | `config/config_fsm_seqdet.yaml`, `config/config_mult_seq8.yaml` |
+| Automated formal pipeline | `formal_pipeline.py` (SAT miter / equiv_make / eqy / bounded BMC from reset), run automatically after every GA run, `--selftest` against real tools | `formal_depth`, `formal_timeout_sec`, `use_eqy`, `reset_port` |
+| Hierarchy / SystemVerilog (H) | Multi-file seeds (`seed_files`), `include` inlining, top inference, auto `read_verilog -sv`, auto flatten, per-side flattening in the equivalence checker | `seed_files`, `module_name`, `include_dirs`; example `config/config_hier_mac.yaml` |
+
+Caveats that matter: formal equivalence is relative to the *seed* (the orchestrator sanity-simulates the seed
+if Verilator is present); SAT can time out on very wide arithmetic, and a timeout counts as "unproven", never as a pass;
+SystemVerilog goes through Yosys' built-in frontend only (no interfaces/classes; yosys-slang is not integrated);
+the liberty/real-area stage does not support multi-module designs yet; speedups are **not measured**.
+
+## Design goals
+
+The idea being tested: automate part of the manual RTL-iteration inner loop
+with search plus real EDA tool feedback, rather than a learned proxy. The
+design properties are:
 
 - **Verifiable** — every candidate design is checked for bit-exact
   functional correctness before its area/delay is even considered, so the
@@ -34,10 +89,10 @@ would still need.
 ## Architecture
 
 ```
-1_symbolic_core/       Static analysis: constraint extraction, DRC pre-filtering
-2_evolutionary_engine/ Genetic programming: mutation, crossover, fitness, population
-3_sandbox_time/        Sandboxed EDA tool execution: Verilator + Yosys via subprocess
-4_self_improve_loop/   The orchestrator: the generation-by-generation GA loop, plus
+evohdl/symbolic_core/       Static analysis: constraint extraction, DRC pre-filtering
+evohdl/evolutionary_engine/ Genetic programming: mutation, crossover, fitness, population
+evohdl/sandbox/        Sandboxed EDA tool execution: Verilator + Yosys via subprocess
+evohdl/self_improve_loop/   The orchestrator: the generation-by-generation GA loop, plus
                         openlane_runner / opensta_runner / nextpnr_runner /
                         hardware_verification_pipeline (real-hardware verification)
 flow/                  Real EDA tool configs/scripts: OpenLane (sky130), OpenSTA, nextpnr
@@ -111,6 +166,7 @@ cd EvoHDL
 python3 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r config/requirements.txt
+pip install -e .                 # makes the `evohdl` package importable
 ```
 
 ### 3. Sanity check before a full run
@@ -158,21 +214,22 @@ Outputs:
 pytest tests/unit/ -v
 ```
 
-35 tests cover the mutation operators, crossover, tournament/elite
-selection, static DRC checks, and — most importantly — the golden ALU
-reference model that every mutant's correctness is checked against. These
-run without Verilator/Yosys installed (pure Python logic). CI
+The unit tests cover the mutation operators, crossover, tournament/elite
+selection, static DRC checks, Yosys output parsing, and the golden reference
+models (ALU, PicoRV32 ALU, 4-bit counter) every mutant is checked against.
+They run without Verilator/Yosys installed (pure Python logic, external tools
+mocked); CI reports the current count. CI
 (`.github/workflows/ci.yml`) additionally installs the real toolchain and
 runs a live 2-generation smoke test on every push.
 
-## Benchmarking (for pitch decks / applications)
+## Benchmarking
 
 After a full run has produced `designs/best/`, generate a before/after
 comparison table (fast, technology-independent Yosys proxy -- cell count +
 logic depth):
 
 ```bash
-python 2_evolutionary_engine/baseline_compare.py \
+python -m evohdl.evolutionary_engine.baseline_compare \
     --module picorv32_alu \
     --baseline designs/seed/picorv32_alu.v \
     --evolved designs/best/picorv32_alu_best.v \
@@ -221,7 +278,7 @@ python run_self_learner.py --config config/config_picorv32_alu.yaml --full-verif
 or standalone, against any baseline/evolved pair:
 
 ```bash
-python 4_self_improve_loop/hardware_verification_pipeline.py \
+python -m evohdl.self_improve_loop.hardware_verification_pipeline \
     --module picorv32_alu \
     --baseline designs/seed/picorv32_alu.v \
     --evolved designs/best/picorv32_alu_best.v
@@ -252,8 +309,7 @@ same OpenLane + sky130 flow on GitHub's free `ubuntu-latest` runner
    real timing slack numbers.
 
 Stage 4 (nextpnr-ice40) is light enough to keep running locally --
-`apt install nextpnr-ice40` and `python
-4_self_improve_loop/nextpnr_runner.py designs/seed/picorv32_alu.v
+`apt install nextpnr-ice40` and `python -m evohdl.self_improve_loop.nextpnr_runner designs/seed/picorv32_alu.v
 picorv32_alu` both run fine on an 8GB laptop (verified: this exact command
 completes in a few seconds).
 
@@ -263,7 +319,7 @@ completes in a few seconds).
 
 ```bash
 sudo apt-get update && sudo apt-get install -y yosys nextpnr-ice40
-python 4_self_improve_loop/nextpnr_runner.py designs/seed/picorv32_alu.v picorv32_alu
+python -m evohdl.self_improve_loop.nextpnr_runner designs/seed/picorv32_alu.v picorv32_alu
 ```
 
 **Stage 2 (OpenLane + SkyWater 130nm) -- needs Docker:**
@@ -273,7 +329,7 @@ python 4_self_improve_loop/nextpnr_runner.py designs/seed/picorv32_alu.v picorv3
 # running first. Then:
 pip install --user volare
 volare enable --pdk sky130 $(volare ls-remote --pdk sky130 | tail -1)   # pulls the PDK once, ~2-3 GB
-python 4_self_improve_loop/openlane_runner.py designs/seed/picorv32_alu.v picorv32_alu
+python -m evohdl.self_improve_loop.openlane_runner designs/seed/picorv32_alu.v picorv32_alu
 ```
 
 **Stage 3 (OpenSTA) -- build from source (not packaged for apt/pip):**
@@ -284,7 +340,7 @@ cd OpenSTA && mkdir build && cd build
 cmake .. && make -j$(nproc)
 sudo make install   # installs the `sta` binary
 cd ../..
-python 4_self_improve_loop/opensta_runner.py \
+python -m evohdl.self_improve_loop.opensta_runner \
     <path-to-openlane-routed-netlist> picorv32_alu \
     --pdk-root ~/.volare
 ```
@@ -297,15 +353,14 @@ time.)
 
 Being upfront about this matters more than overselling it:
 
-- **Interface-fixed mutation.** Mutation and crossover only modify the
-  *implementation* inside a module's fixed port contract — they don't grow
-  or shrink the interface, and they operate at statement/line granularity
-  via regex (generalized to any bit-width case selector, not just 3-bit,
-  as of the picorv32_alu integration) rather than a full Verilog AST. This
-  keeps the system reliable and dependency-light, but it bounds how
-  structurally different a mutant can get from the seed. Swapping in a
-  real Verilog parser (pyverilog, slang, or a Yosys-based AST dump) is the
-  natural next step for exploring larger design-space jumps.
+- **Interface-fixed mutation.** Mutation and crossover only modify the *implementation* inside a module's
+  fixed port contract; they never grow or shrink the interface. Structure-aware rewrites now run on a real
+  syntax tree (`evohdl/hdl/`, a pure-Python parser/printer for a Verilog-2001 + SystemVerilog subset: modules,
+  ports, parameters, wire/reg/logic, assign, always*/begin/if/case, all expression forms, instances). It does
+  **not** cover `generate`, functions/tasks, `initial`, loops, interfaces, packages or structs; on such sources the
+  AST operators fall back to the older regex operators or no-op. This is our own parser, not PyVerilog or slang
+  (neither could be installed where this was developed); an adapter for slang/pyverilog is a possible later step.
+  At startup `analyze_design_support()` logs what a seed will not support.
 - **Generic synthesis is still the per-generation fitness signal.**
   `yosys_synthesizer.py` uses the technology-independent `synth` pass for
   speed across hundreds of individuals x dozens of generations — area/
@@ -315,19 +370,21 @@ Being upfront about this matters more than overselling it:
   *single best* genome once a run finishes, rather than on every
   individual, which is what keeps the search itself fast while still
   producing investor-credible final numbers.
-- **Two design families so far.** `alu_basic` (8-bit teaching ALU) and
-  `picorv32_alu` (real 32-bit RV32I ALU extracted from PicoRV32, see
-  `designs/seed/picorv32_alu.v`). Extending to sequential circuits (state
-  machines, pipelines, PicoRV32's multi-cycle multiplier/divider) needs a
-  testbench generator that drives a clock and checks state over multiple
-  cycles, not just combinational input/output pairs — `comparator_4bit.v`
-  and `counter_4bit.v` are left as the next extension points, following
-  the dispatch-registry pattern in `3_sandbox_time/testbench_generator.py`.
-- **No formal equivalence checking.** Correctness is established by
-  simulation against ~350-950+ test vectors depending on module (corner
-  cases + random), not formal verification. For safety-critical designs,
-  add an equivalence check (e.g. Yosys `eqy`) between mutant and seed
-  before accepting a "correct" result.
+- **Five registered designs.** Combinational: `alu_basic`, `picorv32_alu`. Sequential: `counter_4bit`,
+  `fsm_seqdet` (Moore FSM, 1011 detector) and `mult_seq8` (multi-cycle 8x8 shift-add multiplier, 8-cycle latency).
+  Sequential designs use a generic cycle-trace Verilator testbench driven by spec-level golden models
+  (`testbench_generator.py`); the seeds were checked against those models by pure-Python simulation and the
+  generated C++ testbenches were compiled and run against C++ stand-ins of the seeds, but **none has been run
+  through Verilator or the GA with real tools yet**. `comparator_4bit.v` still has a seed but no renderer. Adding a
+  design means adding a renderer to `MODULE_RENDERERS`.
+- **Formal verification: what "proven" means.** Every run now ends with an automatic proof attempt of best vs seed
+  (`evohdl/sandbox/formal_pipeline.py`, report in `benchmarks/formal_proof_<module>.md`): Yosys miter+SAT for
+  combinational designs, `equiv_make`+`equiv_simple`+`equiv_induct` for sequential ones (unbounded when it works),
+  optional YosysHQ `eqy`, then a bounded model check from reset as the last resort. The report names the strongest
+  thing actually shown (`PROVEN_UNBOUNDED`, `PROVEN_BY_EQY`, `PROVEN_BOUNDED` for N cycles, `NOT_EQUIVALENT`,
+  `UNPROVEN`). It is equivalence to the *seed* under Yosys' semantics with a trusted solver -- not a proof the
+  seed is right, and a sequential design with re-encoded state will often only reach `PROVEN_BOUNDED`.
+  During the GA itself, `hybrid`/`formal` modes use the same checkers per candidate.
 - **Stages 2-3 of the hardware verification flow need external
   toolchains** (Docker + the sky130 PDK; a from-source OpenSTA build) that
   aren't part of this repo's pip requirements, by design — they're

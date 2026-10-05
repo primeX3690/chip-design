@@ -20,10 +20,7 @@ now structurally the same call.
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[2] / "1_symbolic_core"))
-sys.path.append(str(Path(__file__).resolve().parents[2] / "3_sandbox_time"))
-
-import constraint_extractor as ce  # noqa: E402
+from evohdl.symbolic_core import constraint_extractor as ce  # noqa: E402
 
 
 def test_extract_constraints_uses_synthesize_design_directly(monkeypatch):
@@ -44,7 +41,7 @@ def test_extract_constraints_uses_synthesize_design_directly(monkeypatch):
         calls.append((module_name, yosys_bin, timeout_sec))
         return FakeOutcome()
 
-    import yosys_synthesizer
+    from evohdl.sandbox import yosys_synthesizer
     monkeypatch.setattr(yosys_synthesizer, "synthesize_design", fake_synthesize_design)
 
     constraints = ce.extract_constraints("module picorv32_alu(); endmodule", "picorv32_alu")
@@ -61,9 +58,7 @@ def test_a_tied_design_now_scores_fitness_one(monkeypatch):
     are IDENTICAL -- as they always are for the unmutated seed individual
     that's guaranteed to be in generation 0 -- fitness must be exactly 1.0,
     not something like 0.85."""
-    sys.path.append(str(Path(__file__).resolve().parents[2] / "2_evolutionary_engine"))
-    import fitness_evaluator as fe
-
+    from evohdl.evolutionary_engine import fitness_evaluator as fe
     class FakeSim:
         compiled = True
         ran = True

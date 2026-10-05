@@ -24,10 +24,7 @@ from pathlib import Path
 import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-sys.path.append(str(PROJECT_ROOT / "4_self_improve_loop"))
-sys.path.append(str(PROJECT_ROOT / "1_symbolic_core"))
-
-from evolution_orchestrator import EvolutionOrchestrator  # noqa: E402
+from evohdl.self_improve_loop.evolution_orchestrator import EvolutionOrchestrator  # noqa: E402
 
 
 def setup_logging(verbose: bool):
@@ -55,6 +52,8 @@ def check_tools(config: dict) -> bool:
         path = shutil.which(binary)
         if path:
             print(f"[OK] {label} found at {path}")
+        elif tool_key == "verilator_bin" and config.get("verification_mode") == "formal":
+            print(f"[SKIP] {label} not found -- not required with verification_mode: formal (Yosys equivalence only).")
         else:
             print(f"[MISSING] {label} ('{binary}') not found on PATH.")
             print(f"          Install it -- see README.md 'Environment Setup'.")
@@ -68,9 +67,9 @@ def apply_auto_baseline(config: dict):
     if not config.get("auto_baseline", False):
         return config
     try:
-        from constraint_extractor import extract_constraints  # noqa
-        seed_path = PROJECT_ROOT / config.get("seed_design", "designs/seed/alu_basic.v")
-        source = seed_path.read_text()
+        from evohdl.symbolic_core.constraint_extractor import extract_constraints  # noqa
+        from evohdl.sandbox.design_bundle import load_seed_from_config  # noqa
+        source = load_seed_from_config(config, PROJECT_ROOT).source
         constraints = extract_constraints(source, config.get("module_name", "alu_basic"), yosys_bin=config.get("yosys_bin", "yosys"))
         config["baseline_cells"] = constraints.baseline_cells
         config["baseline_depth"] = constraints.baseline_depth
@@ -85,6 +84,8 @@ def apply_auto_baseline(config: dict):
 
 def main():
     parser = argparse.ArgumentParser(description="EvoHDL master switch")
+    parser.add_argument("--no-proof", action="store_true",
+                        help="Skip the automatic formal proof (best vs seed) at the end of the run.")
     parser.add_argument("--config", default="config/system_config.yaml")
     parser.add_argument("--generations", type=int, default=None, help="override generations from config")
     parser.add_argument("--population", type=int, default=None, help="override population_size from config")
@@ -93,7 +94,7 @@ def main():
     parser.add_argument("--full-verify", action="store_true",
                          help="after the GA run finishes, chain baseline_compare + OpenLane(sky130) + OpenSTA + "
                               "nextpnr-ice40 on the best genome and write benchmarks/hardware_verification_report.md "
-                              "(see 4_self_improve_loop/hardware_verification_pipeline.py)")
+                              "(see evohdl/self_improve_loop/hardware_verification_pipeline.py)")
     args = parser.parse_args()
 
     setup_logging(args.verbose)
@@ -126,14 +127,39 @@ def main():
     logger.info("Run history saved to dashboard/run_history.json")
     logger.info("Launch the dashboard with: streamlit run dashboard/app.py")
 
+    # Automated formal proof of the best design vs the seed (needs Yosys; skipped silently if absent).
+    # Always runs, independent of verification_mode, so every GA run ends with an honest PROVEN/BOUNDED/NOT verdict.
+    if not args.no_proof:
+        try:
+            from evohdl.sandbox.design_bundle import load_seed_from_config
+            from evohdl.sandbox.formal_pipeline import run_formal_pipeline, write_report
+            module_name = config.get("module_name", "alu_basic")
+            seed_src = load_seed_from_config(config, PROJECT_ROOT).source
+            best_path = PROJECT_ROOT / "designs" / "best" / f"{module_name}_best.v"
+            if best_path.exists():
+                verdict = run_formal_pipeline(
+                    seed_src, best_path.read_text(), module_name,
+                    yosys_bin=config.get("yosys_bin", "yosys"), bmc_depth=int(config.get("formal_depth", 20)),
+                    timeout_sec=float(config.get("formal_timeout_sec", 180)),
+                    reset_port=config.get("reset_port"),
+                    reset_active_low=config.get("reset_active_low"),
+                    use_eqy=config.get("use_eqy", "auto"),
+                )
+                md = write_report(verdict, module_name, PROJECT_ROOT / "benchmarks", "seed", str(best_path.name))
+                logger.info("Formal verification of best vs seed: %s (%s) -> %s", verdict.status, verdict.method or "-", md)
+        except Exception as exc:  # noqa: BLE001 -- the proof is a report, never a reason to fail the run
+            logger.warning("Formal proof stage skipped: %s", exc)
+
     if args.full_verify:
         logger.info("Running full hardware verification pipeline (OpenLane/OpenSTA/nextpnr)...")
-        sys.path.append(str(PROJECT_ROOT / "2_evolutionary_engine"))
-        from hardware_verification_pipeline import run_full_verification, render_markdown, REPORT_DIR
+        from evohdl.self_improve_loop.hardware_verification_pipeline import run_full_verification, render_markdown, REPORT_DIR
         module_name = config.get("module_name")
         report = run_full_verification(
             module_name=module_name,
-            baseline_rtl_path=config.get("seed_design", f"designs/seed/{module_name}.v"),
+            baseline_rtl_path=(
+                f"designs/best/{module_name}_seed_flat.v" if config.get("seed_files")
+                else config.get("seed_design", f"designs/seed/{module_name}.v")
+            ),
             evolved_rtl_path=f"designs/best/{module_name}_best.v",
             clock_port=config.get("clock_port"),
             clock_period_ns=config.get("clock_period_ns", 10.0),

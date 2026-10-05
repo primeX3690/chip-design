@@ -3,7 +3,7 @@ tests/unit/test_counter_4bit_sequential.py
 
 Regression test for the Stage-3 addition (2026-09): counter_4bit is the
 first SEQUENTIAL (clocked) design wired into the automated GA pipeline via
-3_sandbox_time/testbench_generator.py's MODULE_RENDERERS registry. Before
+evohdl/sandbox/testbench_generator.py's MODULE_RENDERERS registry. Before
 this, every module in the registry was purely combinational.
 
 This test does NOT need Verilator/Yosys installed -- it only exercises the
@@ -14,9 +14,7 @@ in agreement.
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[2] / "3_sandbox_time"))
-
-from testbench_generator import (  # noqa: E402
+from evohdl.sandbox.testbench_generator import (  # noqa: E402
     MODULE_RENDERERS,
     golden_counter_4bit_step,
     render_testbench,

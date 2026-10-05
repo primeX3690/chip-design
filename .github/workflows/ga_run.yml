@@ -33,7 +33,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y yosys verilator
 
       - name: Install Python dependencies
-        run: pip install -r config/requirements.txt
+        run: pip install -r config/requirements.txt -e .
 
       - name: Run the GA search
         run: |
@@ -42,7 +42,7 @@ jobs:
       - name: Generate the before/after benchmark report
         run: |
           MODULE=$(python -c "import yaml,sys; print(yaml.safe_load(open('${{ github.event.inputs.config_file }}'))['module_name'])")
-          python 2_evolutionary_engine/baseline_compare.py \
+          python -m evohdl.evolutionary_engine.baseline_compare \
             --module "$MODULE" \
             --baseline "designs/seed/${MODULE}.v" \
             --evolved "designs/best/${MODULE}_best.v" \

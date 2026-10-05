@@ -6,3 +6,9 @@ flow/openlane/_runs/
 *.vcd
 obj_dir*/
 .venv/
+*.egg-info/
+.pytest_cache/
+benchmarks/baseline_result*.json
+benchmarks/baseline_result*.md
+benchmarks/external/
+benchmarks/reports/

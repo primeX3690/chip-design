@@ -1,10 +1,10 @@
 """
-Unit tests for 3_sandbox_time/testbench_generator.py's golden_alu() --
+Unit tests for evohdl/sandbox/testbench_generator.py's golden_alu() --
 this is the ground truth every mutant is checked against, so it needs its
 own independent verification.
 Run: pytest tests/unit/test_testbench_generator.py -v
 """
-from testbench_generator import golden_alu, generate_vectors, render_testbench
+from evohdl.sandbox.testbench_generator import golden_alu, generate_vectors, render_testbench
 
 
 def test_add_no_overflow():

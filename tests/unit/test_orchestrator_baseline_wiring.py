@@ -1,5 +1,5 @@
 """
-Regression test for 4_self_improve_loop/evolution_orchestrator.py
+Regression test for evohdl/self_improve_loop/evolution_orchestrator.py
 Run: pytest tests/unit/test_orchestrator_baseline_wiring.py -v
 
 Guards against a real bug found in this repo (2026-09): config's
@@ -11,20 +11,18 @@ instead, which made the area/delay fitness signal nearly flat for any
 larger real block and produced runs that looked like they weren't
 evolving anything. This test fails loudly if that wiring regresses.
 """
-import evolution_orchestrator as eo
-
-
+from evohdl.self_improve_loop import evolution_orchestrator as eo
 def test_evaluate_one_forwards_config_baselines_and_timeouts(monkeypatch):
     captured = {}
 
     def fake_score(verilog_source, module_name, verilator_bin, yosys_bin,
                     baseline_cells, baseline_depth, sim_timeout, synth_timeout,
-                    liberty_path=None, real_area_weight=0.25, baseline_real_area_um2=0.0):
+                    liberty_path=None, real_area_weight=0.25, baseline_real_area_um2=0.0, **extra):
         captured.update(dict(
             baseline_cells=baseline_cells, baseline_depth=baseline_depth,
             sim_timeout=sim_timeout, synth_timeout=synth_timeout,
         ))
-        from fitness_evaluator import FitnessReport
+        from evohdl.evolutionary_engine.fitness_evaluator import FitnessReport
         return FitnessReport(fitness=0.9, functionally_correct=True, pass_ratio=1.0,
                               cell_count=1300, logic_depth=20, sim_error="", synth_error="")
 

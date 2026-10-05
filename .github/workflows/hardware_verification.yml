@@ -9,7 +9,7 @@ name: EvoHDL Real Hardware Verification (LibreLane + sky130)
 #
 # nextpnr-ice40 (point 5) is deliberately NOT run here -- it's light enough
 # to just run on your laptop directly:
-#   python 4_self_improve_loop/nextpnr_runner.py designs/seed/picorv32_alu.v picorv32_alu
+#   python -m evohdl.self_improve_loop.nextpnr_runner designs/seed/picorv32_alu.v picorv32_alu
 #
 # Trigger manually from the GitHub Actions tab ("Run workflow"), or
 # whenever you push a new designs/best/<module>_best.v.
@@ -39,7 +39,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install -r config/requirements.txt volare librelane
+        run: pip install -r config/requirements.txt -e . volare librelane
 
       - name: Free disk space (LibreLane + PDK need room on the runner)
         run: |
@@ -64,14 +64,14 @@ jobs:
 
       - name: Run LibreLane on the best evolved design (real sky130 area + timing)
         run: |
-          python 4_self_improve_loop/openlane_runner.py \
+          python -m evohdl.self_improve_loop.openlane_runner \
             "designs/best/${{ steps.module.outputs.name }}_best.v" \
             "${{ steps.module.outputs.name }}" \
             --pdk-root "$PDK_ROOT" || true
 
       - name: Run the full verification pipeline (also folds in the fast Yosys baseline compare)
         run: |
-          python 4_self_improve_loop/hardware_verification_pipeline.py \
+          python -m evohdl.self_improve_loop.hardware_verification_pipeline \
             --module "${{ steps.module.outputs.name }}" \
             --baseline "designs/seed/${{ steps.module.outputs.name }}.v" \
             --evolved "designs/best/${{ steps.module.outputs.name }}_best.v" \

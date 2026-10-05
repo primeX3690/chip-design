@@ -1,10 +1,10 @@
 """
-Unit tests for 3_sandbox_time/testbench_generator.py's golden_picorv32_alu()
+Unit tests for evohdl/sandbox/testbench_generator.py's golden_picorv32_alu()
 -- the ground truth picorv32_alu mutants are checked against. Mirrors
 test_testbench_generator.py's structure for the original alu_basic model.
 Run: pytest tests/unit/test_picorv32_alu.py -v
 """
-from testbench_generator import golden_picorv32_alu, render_testbench, MODULE_RENDERERS
+from evohdl.sandbox.testbench_generator import golden_picorv32_alu, render_testbench, MODULE_RENDERERS
 
 
 def test_add():
@@ -73,7 +73,7 @@ def test_vectors_exercise_undefined_opcodes_10_to_15():
     simulation because no vector ever used opcodes 10..15; only the formal
     equivalence check caught it. Every opcode must now be exercised, and
     the golden model must return 0 for the undefined ones (seed's default)."""
-    from testbench_generator import _generate_picorv32_alu_vectors, golden_picorv32_alu
+    from evohdl.sandbox.testbench_generator import _generate_picorv32_alu_vectors, golden_picorv32_alu
     ops = {v[2] for v in _generate_picorv32_alu_vectors(50, seed=1)}
     assert ops == set(range(16))
     assert golden_picorv32_alu(0, 0, 13) == 0

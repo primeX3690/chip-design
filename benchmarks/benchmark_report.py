@@ -20,10 +20,7 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.append(str(PROJECT_ROOT / "2_evolutionary_engine"))
-sys.path.append(str(PROJECT_ROOT / "3_sandbox_time"))
-
-from fitness_evaluator import score  # noqa: E402
+from evohdl.evolutionary_engine.fitness_evaluator import score  # noqa: E402
 
 
 def format_row(label: str, seed_val, best_val, better: str = "lower") -> str:

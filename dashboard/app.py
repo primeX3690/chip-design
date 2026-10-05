@@ -21,7 +21,6 @@ import pandas as pd
 import streamlit as st
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parent))
 import system_health  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent

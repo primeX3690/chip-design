@@ -1,11 +1,11 @@
 """
-Unit tests for 2_evolutionary_engine/crossover_engine.py
+Unit tests for evohdl/evolutionary_engine/crossover_engine.py
 Run: pytest tests/unit/test_crossover_engine.py -v
 """
 import random
 from pathlib import Path
 
-from crossover_engine import crossover, crossover_population_pair
+from evohdl.evolutionary_engine.crossover_engine import crossover, crossover_population_pair
 
 SEED_PATH = Path(__file__).resolve().parent.parent.parent / "designs" / "seed" / "alu_basic.v"
 

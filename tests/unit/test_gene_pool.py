@@ -1,11 +1,11 @@
 """
-Unit tests for 2_evolutionary_engine/gene_pool.py
+Unit tests for evohdl/evolutionary_engine/gene_pool.py
 Run: pytest tests/unit/test_gene_pool.py -v
 """
 import random
 from dataclasses import dataclass
 
-from gene_pool import GenePool, Individual
+from evohdl.evolutionary_engine.gene_pool import GenePool, Individual
 
 
 @dataclass

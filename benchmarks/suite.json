@@ -1,0 +1,151 @@
+{
+ "description": "Default head-to-head suite. Add your own entries (e.g. OpenCores / PicoRV32 / Ibex files); designs outside the native Verilog subset still get Yosys baselines and are reported as 'native: unsupported'.",
+ "benchmarks": [
+  {
+   "name": "add16",
+   "files": [
+    "benchmarks/rtl/add16.v"
+   ],
+   "top": "add16",
+   "family": "rtl"
+  },
+  {
+   "name": "add32",
+   "files": [
+    "benchmarks/rtl/add32.v"
+   ],
+   "top": "add32",
+   "family": "rtl"
+  },
+  {
+   "name": "mul8",
+   "files": [
+    "benchmarks/rtl/mul8.v"
+   ],
+   "top": "mul8",
+   "family": "rtl"
+  },
+  {
+   "name": "mac8",
+   "files": [
+    "benchmarks/rtl/mac8.v"
+   ],
+   "top": "mac8",
+   "family": "rtl"
+  },
+  {
+   "name": "cmp16",
+   "files": [
+    "benchmarks/rtl/cmp16.v"
+   ],
+   "top": "cmp16",
+   "family": "rtl"
+  },
+  {
+   "name": "parity32",
+   "files": [
+    "benchmarks/rtl/parity32.v"
+   ],
+   "top": "parity32",
+   "family": "rtl"
+  },
+  {
+   "name": "mux32",
+   "files": [
+    "benchmarks/rtl/mux32.v"
+   ],
+   "top": "mux32",
+   "family": "rtl"
+  },
+  {
+   "name": "popcnt16",
+   "files": [
+    "benchmarks/rtl/popcnt16.v"
+   ],
+   "top": "popcnt16",
+   "family": "rtl"
+  },
+  {
+   "name": "shift16",
+   "files": [
+    "benchmarks/rtl/shift16.v"
+   ],
+   "top": "shift16",
+   "family": "rtl"
+  },
+  {
+   "name": "prio16",
+   "files": [
+    "benchmarks/rtl/prio16.v"
+   ],
+   "top": "prio16",
+   "family": "rtl"
+  },
+  {
+   "name": "sad4",
+   "files": [
+    "benchmarks/rtl/sad4.v"
+   ],
+   "top": "sad4",
+   "family": "rtl"
+  },
+  {
+   "name": "alu_basic",
+   "files": [
+    "designs/seed/alu_basic.v"
+   ],
+   "top": "alu_basic",
+   "family": "rtl-seed"
+  },
+  {
+   "name": "comparator_4bit",
+   "files": [
+    "designs/seed/comparator_4bit.v"
+   ],
+   "top": "comparator_4bit",
+   "family": "rtl-seed"
+  },
+  {
+   "name": "picorv32_alu",
+   "files": [
+    "designs/seed/picorv32_alu.v"
+   ],
+   "top": "picorv32_alu",
+   "family": "rtl-seed"
+  },
+  {
+   "name": "counter_4bit",
+   "files": [
+    "designs/seed/counter_4bit.v"
+   ],
+   "top": "counter_4bit",
+   "family": "rtl-seed-seq"
+  },
+  {
+   "name": "fsm_seqdet",
+   "files": [
+    "designs/seed/fsm_seqdet.v"
+   ],
+   "top": "fsm_seqdet",
+   "family": "rtl-seed-seq"
+  },
+  {
+   "name": "mult_seq8",
+   "files": [
+    "designs/seed/mult_seq8.v"
+   ],
+   "top": "mult_seq8",
+   "family": "rtl-seed-seq"
+  },
+  {
+   "name": "mac_top",
+   "files": [
+    "designs/examples/hier_mac/adder8.sv",
+    "designs/examples/hier_mac/mult4.sv",
+    "designs/examples/hier_mac/mac_top.sv"
+   ],
+   "top": "mac_top",
+   "family": "rtl-hier"
+  }
+ ]
+}

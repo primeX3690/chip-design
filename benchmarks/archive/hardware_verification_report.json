@@ -1,0 +1,39 @@
+{
+  "module_name": "picorv32_alu",
+  "baseline_rtl_path": "designs/seed/picorv32_alu.v",
+  "evolved_rtl_path": "designs/best/picorv32_alu_best.v",
+  "generated_at": "2026-09-17T04:54:47.548850+00:00",
+  "stages": {
+    "generic_synth": {
+      "ran": true,
+      "baseline_cell_count": 1409.0,
+      "evolved_cell_count": 1409.0,
+      "cell_count_improvement_pct": 0.0,
+      "baseline_logic_depth": 23.0,
+      "evolved_logic_depth": 23.0,
+      "logic_depth_improvement_pct": 0.0,
+      "module_name": "picorv32_alu",
+      "baseline_rtl_path": "designs/seed/picorv32_alu.v",
+      "evolved_rtl_path": "designs/best/picorv32_alu_best.v"
+    },
+    "openlane_sky130": {
+      "ran": false,
+      "error": "Docker not found -- install Docker + `pip install volare` and run `volare enable <pdk-version>` first (see README.md)."
+    },
+    "opensta": {
+      "ran": false,
+      "error": "OpenSTA ('sta') not on PATH"
+    },
+    "nextpnr_ice40": {
+      "ran": true,
+      "critical_path_ns": 15.453999936580658,
+      "implied_fmax_mhz": 64.70816643611683,
+      "logic_cells_used": 648,
+      "logic_cells_available": 7680,
+      "io_used": 100,
+      "io_available": 256,
+      "report_path": "",
+      "error": ""
+    }
+  }
+}

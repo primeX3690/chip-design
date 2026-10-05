@@ -1,0 +1,37 @@
+# EvoHDL config: HIERARCHICAL / SystemVerilog example (gap H demo).
+# Three files, one top module. No hand-written testbench exists for this design, so correctness is
+# checked by formal equivalence against the seed (verification_mode: formal) -- see README.
+module_name: mac_top               # the top module
+seed_files:                        # list sub-modules/packages BEFORE the files that use them
+  - designs/examples/hier_mac/adder8.sv
+  - designs/examples/hier_mac/mult4.sv
+  - designs/examples/hier_mac/mac_top.sv
+# include_dirs: [designs/examples/hier_mac]   # for `include "x.vh"
+
+population_size: 18
+generations: 20
+elite_count: 2
+tournament_k: 3
+crossover_rate: 0.3                # no case-branch structure to recombine; rely on pass pipelines
+mutation_rate: 0.9
+random_seed: 42
+max_parallel_evals: 4
+
+verilator_bin: verilator
+yosys_bin: yosys
+sim_timeout_sec: 60
+synth_timeout_sec: 60
+auto_baseline: true
+baseline_cells: 40
+baseline_depth: 6
+
+fitness_mode: relative_gain
+area_weight: 2.0
+delay_weight: 1.0
+verification_mode: formal
+equiv_timeout_sec: 60
+
+islands: 3
+migration_interval: 4
+migration_count: 1
+migration_topology: ring

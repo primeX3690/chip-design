@@ -1,4 +1,4 @@
-# EvoHDL Python dependencies
+# EvoHDL Python dependencies (the package itself: `pip install -e .`, see pyproject.toml)
 # Note: Verilator and Yosys are NOT Python packages -- they are external
 # EDA tools that must be installed separately via your OS package manager
 # or built from source. See README.md "Environment Setup".

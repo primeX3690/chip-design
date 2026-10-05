@@ -1,7 +1,7 @@
 # golden_outputs/
 
 EvoHDL currently uses an in-code Python golden reference
-(`golden_alu()` in `3_sandbox_time/testbench_generator.py`) rather than
+(`golden_alu()` in `evohdl/sandbox/testbench_generator.py`) rather than
 static golden-output files, so the reference model can never drift out of
 sync with the generated testbench.
 

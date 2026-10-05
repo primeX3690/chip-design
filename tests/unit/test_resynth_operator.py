@@ -2,7 +2,7 @@
 tests/unit/test_resynth_operator.py
 
 Regression test for the Stage-6 addition (2026-09):
-2_evolutionary_engine/resynth_operator.py -- a structural mutation operator
+evohdl/evolutionary_engine/resynth_operator.py -- a structural mutation operator
 that re-synthesizes the current genome via an alternate Yosys/ABC
 optimization strategy instead of randomly perturbing RTL source text (see
 the module's own docstring for the full rationale -- this exists because
@@ -17,11 +17,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[2] / "2_evolutionary_engine"))
-sys.path.append(str(Path(__file__).resolve().parents[2] / "3_sandbox_time"))
-
-import resynth_operator as ro  # noqa: E402
-from process_guard import GuardedResult  # noqa: E402
+from evohdl.evolutionary_engine import resynth_operator as ro  # noqa: E402
+from evohdl.sandbox.process_guard import GuardedResult  # noqa: E402
 
 
 def test_configure_sets_module_context():
@@ -79,7 +76,7 @@ def test_timeout_is_a_safe_noop(monkeypatch):
 
 
 def test_registered_in_operator_pool_and_kind_names_stay_aligned():
-    import verilog_mutator as vm
+    from evohdl.evolutionary_engine import verilog_mutator as vm
     assert vm.mutate_resynth_alt_strategy in vm.MUTATION_OPERATORS
     assert "resynth_alt_strategy" in vm.MUTATION_KIND_NAMES
     assert len(vm.MUTATION_OPERATORS) == len(vm.MUTATION_KIND_NAMES), (

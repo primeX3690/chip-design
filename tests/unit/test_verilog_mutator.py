@@ -1,11 +1,11 @@
 """
-Unit tests for 2_evolutionary_engine/verilog_mutator.py
+Unit tests for evohdl/evolutionary_engine/verilog_mutator.py
 Run: pytest tests/unit/test_verilog_mutator.py -v
 """
 import random
 from pathlib import Path
 
-from verilog_mutator import mutate, MUTATION_OPERATORS, MUTATION_KIND_NAMES, mutate_constant_tweak, mutate_shift_amount
+from evohdl.evolutionary_engine.verilog_mutator import mutate, MUTATION_OPERATORS, MUTATION_KIND_NAMES, mutate_constant_tweak, mutate_shift_amount
 
 SEED_PATH = Path(__file__).resolve().parent.parent.parent / "designs" / "seed" / "alu_basic.v"
 
@@ -76,3 +76,18 @@ def test_operator_weighted_selection_respects_weights():
         _, info = mutate(src, random.Random(seed), operator_weights=weights)
         kinds.add(info.kind)
     assert kinds == {MUTATION_KIND_NAMES[0]}
+
+
+def test_drop_redundant_is_module_agnostic_on_picorv32_alu():
+    """Used to be a no-op on anything without `carry_out`; now drops any redundant zero default."""
+    from evohdl.evolutionary_engine.verilog_mutator import mutate_drop_redundant_default
+    src = (Path(__file__).resolve().parent.parent.parent / "designs" / "seed" / "picorv32_alu.v").read_text()
+    mutated, info = mutate_drop_redundant_default(src, random.Random(0))
+    assert info.kind == "drop_redundant" and "no-op" not in info.description
+    assert "alu_out = 32'b0;" in src and mutated.count("alu_out = 32'b0;") == src.count("alu_out = 32'b0;") - 1
+
+
+def test_drop_redundant_still_works_on_alu_basic_carry_out():
+    from evohdl.evolutionary_engine.verilog_mutator import mutate_drop_redundant_default
+    mutated, info = mutate_drop_redundant_default(load_seed(), random.Random(0))
+    assert "carry_out = 1'b0" in info.description
