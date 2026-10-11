@@ -1,0 +1,15 @@
+{
+  "fitness": 2.3544061302681993,
+  "functionally_correct": true,
+  "pass_ratio": 1.0,
+  "cell_count": 15,
+  "logic_depth": 11,
+  "sim_error": "",
+  "synth_error": "",
+  "real_area_um2": 0.0,
+  "baseline_real_area_um2": 0.0,
+  "real_area_measured": false,
+  "verified_by": "formal",
+  "area_improvement_pct": 48.276,
+  "delay_improvement_pct": 38.889
+}

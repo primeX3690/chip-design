@@ -99,3 +99,16 @@ def test_drc_still_flags_a_truly_unassigned_output_and_concat_targets_count():
     from evohdl.symbolic_core.design_rule_checker import check_unconnected_output
     assert check_unconnected_output("module m(output logic [3:0] y); endmodule")
     assert not check_unconnected_output("module m(output [8:0] s, output c); assign {c, s} = 1; endmodule")
+
+
+def test_preflight_flags_outputs_the_testbench_never_checks(monkeypatch):
+    from evohdl.symbolic_core import design_rule_checker as drc
+    from evohdl.sandbox import testbench_generator as tg
+    from evohdl.paths import SEED_DIR
+    src = (SEED_DIR / "alu_basic.v").read_text()
+    real = tg.render_testbench
+    monkeypatch.setattr(tg, "render_testbench", lambda name, *a, **k: real(name, *a, **k).replace("dut->zero_flag", "dut->unused"))
+    sim_msgs = drc.analyze_design_support(src, "alu_basic", "simulation")
+    assert any(m.startswith("ERROR") and "zero_flag" in m and "reward hacking" in m for m in sim_msgs)
+    hyb = drc.analyze_design_support(src, "alu_basic", "hybrid")
+    assert any(m.startswith("WARN") and "zero_flag" in m for m in hyb)

@@ -48,6 +48,7 @@ struct Vector {
     uint8_t opcode;
     uint8_t expected_result;
     uint8_t expected_carry;
+    uint8_t expected_zero;
 };
 
 // {VECTORS}
@@ -67,15 +68,18 @@ int main(int argc, char** argv) {
 
         bool result_ok = (dut->result == vectors[i].expected_result);
         bool carry_ok  = (dut->carry_out == vectors[i].expected_carry);
+        // zero_flag MUST be checked: it used to be unobserved, and the GA "optimized" the ALU by deleting that logic.
+        bool zero_ok   = (dut->zero_flag == vectors[i].expected_zero);
 
-        if (result_ok && carry_ok) {
+        if (result_ok && carry_ok && zero_ok) {
             passed++;
         } else {
             fprintf(stderr,
-                "MISMATCH vec=%d a=%d b=%d op=%d got_r=%d exp_r=%d got_c=%d exp_c=%d\n",
+                "MISMATCH vec=%d a=%d b=%d op=%d got_r=%d exp_r=%d got_c=%d exp_c=%d got_z=%d exp_z=%d\n",
                 i, vectors[i].a, vectors[i].b, vectors[i].opcode,
                 dut->result, vectors[i].expected_result,
-                dut->carry_out, vectors[i].expected_carry);
+                dut->carry_out, vectors[i].expected_carry,
+                dut->zero_flag, vectors[i].expected_zero);
         }
     }
 
@@ -141,7 +145,7 @@ def _render_alu_basic_testbench(module_name: str, num_random_vectors: int = 200,
     vectors = _generate_alu_basic_vectors(num_random_vectors, seed=seed)
     lines = ["static Vector vectors[] = {"]
     for (a, b, op, r, c) in vectors:
-        lines.append(f"    {{{a}, {b}, {op}, {r}, {c}}},")
+        lines.append(f"    {{{a}, {b}, {op}, {r}, {c}, {1 if r == 0 else 0}}},")   # last field: expected zero_flag
     lines.append("};")
     vector_block = "\n".join(lines)
 

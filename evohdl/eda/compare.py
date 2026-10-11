@@ -262,11 +262,10 @@ def render_markdown(meta: dict, rows: List[dict], summary: dict, flavors: List[s
               "These areas are NOT silicon results. Re-run with a real PDK `.lib` before showing anyone.**", ""]
     if not meta["have_yosys"]:
         L += ["> **Yosys was not available: NO head-to-head result exists in this report** (native columns only).", ""]
-    abc_flavors_str = ", ".join(f"`{f}`={FLAVORS.get(f) or 'yosys default'}" for f in flavors)
     L += ["## Environment (reproducibility)", "", f"- command: `{meta['command']}`", f"- evohdl commit: `{meta['commit']}`",
           f"- yosys: `{meta['yosys']}`", f"- python: `{meta['python']}` on `{meta['platform']}`", f"- target: `{meta['target']}` "
           f"({'iCE40 LUT4 count' if meta['target'] == 'ice40' else 'Liberty area via stat -liberty'})",
-          f"- library: `{meta['lib_name']}` sha256[:16] `{meta['lib_hash']}`", f"- abc flavors: {abc_flavors_str}",
+          f"- library: `{meta['lib_name']}` sha256[:16] `{meta['lib_hash']}`", f"- abc flavors: {', '.join(f'`{f}`={FLAVORS.get(f) or 'yosys default'}' for f in flavors)}",
           f"- optimizer effort: {meta['effort']}", ""]
     L += ["## Results", "", f"Area unit: {unit}. `base` = Yosys flow on the original RTL; `pre` = same flow on our verified pre-pass output; "
           "`nat` = this repo's own flow. delta = pre vs base of the same flavor (negative = we are smaller).", ""]

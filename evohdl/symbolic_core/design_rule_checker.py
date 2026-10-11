@@ -139,6 +139,17 @@ def analyze_design_support(source: str, module_name: str | None = None,
     n_modules = count_modules(source)
     if n_modules > 1:
         msgs.append(f"INFO: {n_modules} modules (hierarchy) -- flattened for synthesis and equivalence checking")
+    if module_name and module_name in MODULE_RENDERERS:
+        # Reward-hacking guard: an output the testbench never reads can be broken for free (the GA once "optimized"
+        # alu_basic by deleting zero_flag). Flag any declared output that the rendered testbench never touches.
+        from evohdl.sandbox.testbench_generator import render_testbench
+        tb = render_testbench(module_name)
+        unobserved = [o for o in _OUTPUT_DECL_RE.findall(source) if f"dut->{o}" not in tb]
+        if unobserved:
+            sev = "ERROR" if verification_mode in (None, "simulation") else "WARN"
+            msgs.append(f"{sev}: output(s) {unobserved} are never checked by the '{module_name}' testbench -- the GA can "
+                        f"delete that logic for free (reward hacking). Fix the testbench"
+                        + ("" if sev == "ERROR" else "; only formal equivalence protects them in this mode"))
     if module_name and module_name not in MODULE_RENDERERS:
         if verification_mode in (None, "simulation"):
             msgs.append(f"ERROR: no testbench renderer registered for '{module_name}' "

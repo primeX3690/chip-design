@@ -4,7 +4,7 @@
 |---|---|
 | Mutants are checked for functional correctness (Verilator, 300-950 vectors) | Implemented; needs Verilator to run |
 | Generic Yosys cell count / logic depth as the GA fitness proxy | Implemented; needs Yosys to run |
-| GA finds smaller/faster RTL than the human-written seed | **Not demonstrated.** Best recorded runs: picorv32_alu 0.0%, alu_basic ~3% on cell count |
+| GA finds smaller/faster RTL than the human-written seed | **Not demonstrated.** The only recorded gain (alu_basic ~3%) was reward hacking: it broke `zero_flag`, which the old testbench never checked; Yosys formal proves NOT_EQUIVALENT. Fixed in v6 (testbench + guard). picorv32_alu: 0.0% |
 | Real sky130 die area (OpenLane) | **Never run.** Needs Docker or the `hardware_verification` GitHub workflow |
 | Real sky130 timing (OpenSTA) | **Never run** |
 | FPGA place-and-route (nextpnr-ice40) | Run once: 15.45 ns routed critical path, 648/7680 LUTs on picorv32_alu |

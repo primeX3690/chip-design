@@ -12,3 +12,12 @@ These were produced by earlier versions of the code, on different machines, and 
 Deleted as misleading: identical gen12/26/32 snapshots, a benchmark report with `logic_depth = 0` (the old regex bug),
 and a counter_4bit report produced before the sequential testbench existed (it compiled an ALU testbench against a
 counter and failed).
+
+## IMPORTANT correction (found by the formal pipeline on real Yosys)
+The old `alu_basic` "improvement" (253 -> 245 cells, `designs/best/alu_basic_best.v`) was **not a real optimization**. The only
+change versus the seed is `zero_flag = (result == 0) ? 1'b1 : 1'b0;` -> `? 1'b0 : 1'b0;` (zero_flag stuck at 0). The testbench
+only compared `result` and `carry_out`, so the GA was rewarded for deleting the zero-flag logic. Yosys reported
+`NOT_EQUIVALENT (yosys_sat_miter)` for that design. The testbench now checks `zero_flag`, a regression test asserts every
+registered testbench observes every declared output, and a preflight check warns about unobserved outputs.
+**Treat every pre-v6 GA "best" as unverified.**
+

@@ -1,8 +1,8 @@
-# Updating your existing repo to this release (one step, covers ALL rounds, v5)
+# Updating your existing repo to this release (one step, covers ALL rounds, v6)
 
-This zip (v5) is the **complete tree**, cumulative: it contains round 1 (the 8-gap fixes / new `evohdl/` package
+This zip (v6) is the **complete tree**, cumulative: it contains round 1 (the 8-gap fixes / new `evohdl/` package
 layout), round 2 (A-H upgrades) and round 3 (sequential designs, syntax-tree parser + operators, automated formal
-pipeline) and round 4 (native EDA kernel `evohdl/eda/`, `libs/`, formal-pipeline native fallback). round 5 (head-to-head harness, verified pre-pass emitter, wedge/customer docs). **Apply ONLY v5; do not apply v1-v4 first.** `docs/CHANGELOG_vs_original.md` lists every file that is new,
+pipeline) and round 4 (native EDA kernel `evohdl/eda/`, `libs/`, formal-pipeline native fallback). round 5 (head-to-head harness, verified pre-pass emitter, wedge/customer docs). round 6 (zero_flag testbench fix, unobserved-output guard, `evohdl.doctor`). **Apply ONLY v6; do not apply v1-v5 first.** `docs/CHANGELOG_vs_original.md` lists every file that is new,
 changed or removed relative to the repo you originally uploaded, so you can review it before copying.
 
 1. Commit/stash anything you want to keep in your repo.
@@ -26,3 +26,4 @@ changed or removed relative to the repo you originally uploaded, so you can revi
    (should print "no regressions vs previous run" against the shipped baseline DB).
 10. The first real test of the business idea (needs Yosys + a real `.lib`):
     `LIB=<real.lib> bash scripts/run_head_to_head.sh` then read `benchmarks/reports/<run>/report.md` and `docs/WEDGE_PLAN.md` section 3.
+11. After applying: `python -m evohdl.doctor` (shows which directory evohdl runs from -- re-run `pip install -e .` from the directory you work in if it differs).

@@ -1,0 +1,23 @@
+{
+  "status": "PROVEN_UNBOUNDED",
+  "method": "yosys_equiv_make+equiv_simple+equiv_induct",
+  "depth": null,
+  "sequential": true,
+  "attempts": [
+    {
+      "method": "yosys_equiv_make",
+      "checked": true,
+      "equivalent": true,
+      "bounded": false,
+      "seconds": 0.031,
+      "note": "e"
+    }
+  ],
+  "caveats": [
+    "Equivalence is relative to the seed design; the seed's own correctness is not proven by this check.",
+    "The proof is about Yosys' elaboration of both designs and relies on the SAT/SMT solver being correct.",
+    "Only designs with identical port lists are comparable (mutation never changes the interface)."
+  ],
+  "extra_caveats": [],
+  "proven": true
+}

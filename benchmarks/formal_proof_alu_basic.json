@@ -1,0 +1,23 @@
+{
+  "status": "NOT_EQUIVALENT",
+  "method": "yosys_sat_miter",
+  "depth": null,
+  "sequential": false,
+  "attempts": [
+    {
+      "method": "yosys_sat_miter",
+      "checked": true,
+      "equivalent": false,
+      "bounded": false,
+      "seconds": 0.117,
+      "note": "SAT solver found a real counterexample -- designs differ (see log for the failing inputs/outputs)."
+    }
+  ],
+  "caveats": [
+    "Equivalence is relative to the seed design; the seed's own correctness is not proven by this check.",
+    "The proof is about Yosys' elaboration of both designs and relies on the SAT/SMT solver being correct.",
+    "Only designs with identical port lists are comparable (mutation never changes the interface)."
+  ],
+  "extra_caveats": [],
+  "proven": false
+}
